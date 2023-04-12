@@ -65,6 +65,7 @@ class ChocolateyFeature
 
         if ($null -eq $feature)
         {
+            $currentState.Ensure = 'Absent'
             $currentState.Reasons += @{
                 code = 'ChocolateyFeature:ChocolateyFeature:FeatureNotFound'
                 phrase = ('The feature ''{0}'' was not found.' -f $this.Name)
