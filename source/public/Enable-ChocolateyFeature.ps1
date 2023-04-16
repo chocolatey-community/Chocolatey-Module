@@ -31,10 +31,6 @@ function Enable-ChocolateyFeature
         [System.String]
         $Name,
 
-        [Parameter(ValueFromPipelineByPropertyName = $true)]
-        [Switch]
-        $NoProgress,
-
         [Parameter(DontShow)]
         [switch]
         $RunNonElevated = $(Assert-ChocolateyIsElevated)
