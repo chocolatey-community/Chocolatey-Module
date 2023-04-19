@@ -54,7 +54,7 @@ BuildWorkflow:
 
   ipmopsdsc1: |
     {
-      Import-Module -Name PSDesiredStateConfiguration -MaximumVersion 1.1
+      Import-Module -Name PSDesiredStateConfiguration -MaximumVersion 1.99 -Passthru
     }
   gcpol:
     - build_guestconfiguration_packages
