@@ -158,7 +158,7 @@ class ChocolateyPackage
                 }
 
                 Write-Debug -Message ('  Searching with ''Get-ChocolateyPackage'' and parameters {0}' -f ($searchVersionParam | ConvertTo-Json -Depth 3))
-                $refVersionPackage = Get-ChocolateyPackage @searchVersionParam
+                $refVersionPackage = Find-ChocolateyPackage @searchVersionParam
 
                 if ($null -eq $refVersionPackage)
                 {

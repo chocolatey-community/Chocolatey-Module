@@ -39,42 +39,33 @@ function Test-ChocolateyPackageIsInstalled
 {
     [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "")]
-    param (
-        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName)]
+    param
+    (
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]
+        [String]
         $Name,
 
-        [Parameter(
-            ValueFromPipelineByPropertyName
-        )]
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.String]
+        [String]
         $Version,
 
-        [Parameter(
-            ValueFromPipelineByPropertyName
-        )]
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [string]
         $Source,
 
-        [Parameter(
-            ValueFromPipelineByPropertyName
-        )]
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
         [PSCredential]
         $Credential,
 
-        [Parameter(
-            ValueFromPipelineByPropertyName
-        )]
-        [System.String]
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [String]
         $CacheLocation,
 
-        [Parameter(
-            ValueFromPipelineByPropertyName
-        )]
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
         [switch]
         $UpdateOnly
-
     )
 
     process
@@ -85,9 +76,9 @@ function Test-ChocolateyPackageIsInstalled
         }
 
         #if version latest verify against sources
-        if (! ($InstalledPackages = @(Get-ChocolateyPackage -LocalOnly -Name $Name -Exact)) )
+        if (-not ($InstalledPackages = @(Get-ChocolateyPackage -LocalOnly -Name $Name -Exact)) )
         {
-            Write-Verbose "Could not find Package $Name."
+            Write-Verbose -Message "Could not find Package $Name."
         }
 
         $SearchPackageParams = $PSBoundParameters
@@ -96,8 +87,9 @@ function Test-ChocolateyPackageIsInstalled
 
         if ($Version -eq 'latest')
         {
-            $ReferenceObject = Get-ChocolateyPackage @SearchPackageParams -Exact
-            if (!$ReferenceObject)
+            Write-Verbose -Message ('Finding latest version of package {0}' -f $Name)
+            $ReferenceObject = Find-ChocolateyPackage @SearchPackageParams -Exact
+            if (-not $ReferenceObject)
             {
                 throw "Latest version of Package $name not found. Verify that the sources are reachable and package exists."
             }
@@ -107,6 +99,7 @@ function Test-ChocolateyPackageIsInstalled
             $ReferenceObject = [PSCustomObject]@{
                 Name = $Name
             }
+
             if ($Version)
             {
                 $ReferenceObject | Add-Member -MemberType NoteProperty -Name version -value $Version
@@ -115,13 +108,13 @@ function Test-ChocolateyPackageIsInstalled
 
         $PackageFound = $false
         $MatchingPackages = $InstalledPackages | Where-Object {
-            Write-Debug "Testing $($_.Name) against $($ReferenceObject.Name)"
+            Write-Debug -Message "Testing $($_.Name) against $($ReferenceObject.Name)"
             if ($_.Name -eq $ReferenceObject.Name)
             {
                 $PackageFound = $True
                 Write-Debug "Package Found"
 
-                if (!$Version)
+                if (-not $Version)
                 {
                     return $true
                 }
@@ -157,10 +150,9 @@ function Test-ChocolateyPackageIsInstalled
             $VersionGreaterOrEqual = $False
         }
 
-        Write-Output (
-            [PSCustomObject]@{
-                PackagePresent        = $PackageFound
-                VersionGreaterOrEqual = $VersionGreaterOrEqual
-            })
+        [PSCustomObject]@{
+            PackagePresent        = $PackageFound
+            VersionGreaterOrEqual = $VersionGreaterOrEqual
+        }
     }
 }

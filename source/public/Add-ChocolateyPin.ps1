@@ -57,7 +57,7 @@ function Add-ChocolateyPin
 
     process
     {
-        if (-not (Get-ChocolateyPackage -Name $Name -Exact))
+        if (-not (Get-ChocolateyPackage -LocalOnly -Name $Name -Exact))
         {
             throw ('Chocolatey Package ''{0}'' cannot be found.' -f $Name)
         }

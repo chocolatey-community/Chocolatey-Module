@@ -42,7 +42,7 @@ function Remove-ChocolateyPin
             throw "Chocolatey Software not found."
         }
 
-        if (-not (Get-ChocolateyPackage -Name $Name))
+        if (-not (Get-ChocolateyPackage -LocalOnly -Name $Name))
         {
             throw "The Pin for Chocolatey Package $Name cannot be found."
         }
