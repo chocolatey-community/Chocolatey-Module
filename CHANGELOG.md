@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Creating `Find-ChocolateyPackage` as choco list for remote source will be deprecated in choco CLI 2.0.
+- Fixing the `Get-ChocolateyPackage` calls to use `-localOnly` or to use `Find-ChocolateyPackage` instead.
 - Modified project with new Sampler template.
 - Invoking choco commands now always add `--no-progress` & `--limit-output`.
 - Limiting Get-Command choco to the first result as per [#69](https://github.com/chocolatey-community/Chocolatey/issues/69) on all calls.
