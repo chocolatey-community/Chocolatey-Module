@@ -13,7 +13,8 @@ Encoding: UTF8
 # variable `$env:ModuleVersion`, nor setting the variable `$ModuleVersion`, in the
 # PowerShell session (parent scope) before running the task `build`.
 #SemVer: '99.0.0-preview1'
-
+prefix: prefix.ps1
+suffix: suffix.ps1
 VersionedOutputDirectory: true
 
 ####################################################

@@ -32,7 +32,7 @@ using namespace System.Management.Automation
         This example shows how to call the resource using Invoke-DscResource.
 #>
 [DscResource(RunAsCredential = 'Optional')]
-class ChocolateyPackage
+class ChocolateyPackage : ChocolateyBase
 {
     [DscProperty(Mandatory)]
     [Ensure] $Ensure = 'Present'
@@ -43,10 +43,13 @@ class ChocolateyPackage
     [DscProperty()]
     [String] $Version
 
-    [DscProperty()]
+    [DscProperty()] # WriteOnly
     [hashtable] $ChocolateyOptions
 
-    [DscProperty()]
+    [DscProperty()] # WriteOnly
+    [String] $Source
+
+    [DscProperty()] # WriteOnly
     [PSCredential] $Credential
 
     [DscProperty(NotConfigurable)]
@@ -55,12 +58,12 @@ class ChocolateyPackage
     [DscProperty(NotConfigurable)]
     [ChocolateyReason[]] $Reasons
 
-    [ChocolateyPackage] Get()
+    static [ChocolateyPackage] Get([ChocolateyPackage] $DesiredState)
     {
         $currentState = [ChocolateyPackage]::new()
-        $currentState.Name = $this.Name
+        $currentState.Name = $DesiredState.Name
 
-        if ($false -eq (Test-ChocolateyInstall))
+        if (-not (Test-ChocolateyInstall))
         {
             Write-Debug -Message 'Chocolatey is not installed.'
             $currentState.Ensure = 'Absent'
@@ -69,13 +72,31 @@ class ChocolateyPackage
                 code = 'ChocolateyPackage:ChocolateyPackage:ChocolateyNotInstalled'
                 phrase = 'The Chocolatey software is not installed. We cannot check if a package is present using choco.'
             }
-
-            return $currentState
         }
 
+        $comparePackageParams = @{
+            Name = $DesiredState.Name
+        }
+
+        if ([string]::IsNullOrEmpty($DesiredState.Version) -eq $false)
+        {
+            $comparePackageParams['Version'] = $DesiredState.Version
+        }
+
+        if ([string]::IsNullOrEmpty($DesiredState.Source) -eq $false)
+        {
+            $comparePackageParams['Source'] = $DesiredState.Source
+        }
+
+        if ($null -ne $DesiredState.Credential)
+        {
+            $comparePackageParams['Credential'] = $DesiredState.Credential
+        }
+
+        $comparePackage = $null
         try
         {
-            $localPackage = Get-ChocolateyPackage -LocalOnly -Name $this.Name -Exact
+            $comparePackage = Compare-ChocolateyPackage @comparePackageParams
         }
         catch
         {
@@ -87,115 +108,165 @@ class ChocolateyPackage
             }
         }
 
-        if ($null -eq $localPackage)
-        {
-            Write-Debug -Message ('Local Package ''{0}'' not found.' -f $this.Name)
-            $currentState.Ensure = [Ensure]::Absent
-        }
-        else
-        {
-            Write-Debug -Message ('Local Package found: {0}' -f ($localPackage | ConvertTo-Json))
-            $currentState.Ensure = [ensure]::Present
-            $currentState.Version = $localPackage.Version
-        }
+        $currentState.Version = $comparePackage.InstalledVersion
+        $DesiredState.Version = $comparePackage.ExpectedVersion
 
-        if ($this.Ensure -eq 'Absent' -and $currentState.Ensure -eq $this.Ensure)
+        if ($DesiredState.Ensure -eq 'Present')
         {
-            Write-Debug -Message ('The package named ''{0}'' is absent as expected.' -f $this.Name)
-            $currentState.Reasons += @{
-                Code   = ('ChocolateyPackage:ChocolateyPackage:Compliant')
-                Phrase = ('The Package ''{0}'' is not installed as desired.' -f $currentState.Name)
-            }
-        }
-        elseif ([string]::IsNullOrEmpty($this.Version) -and $currentState.Ensure -eq $this.Ensure)
-        {
-            Write-Debug -Message ('The package named ''{0}'' is present as expected. No version required.' -f $this.Name)
-            $currentState.Reasons += @{
-                Code   = ('ChocolateyPackage:ChocolateyPackage:Compliant')
-                Phrase = ('The Package ''{0}'' is installed (with version ''{1}'').' -f $currentState.Name, $currentState.Version)
-            }
-        }
-        elseif (-not [string]::IsNullOrEmpty($this.Version) -and $this.Version -eq $localPackage.Version -and $currentState.Ensure -eq $this.Ensure)
-        {
-            Write-Debug -Message ('The package named ''{0}'' is present with expected version.' -f $this.Name)
-            $currentState.Reasons += @{
-                Code   = ('ChocolateyPackage:ChocolateyPackage:Compliant')
-                Phrase = ('The Package ''{0}'' is installed with expected version ''{1}''.' -f $currentState.Name, $currentState.Version)
-            }
-        }
-        elseif ($currentState.Ensure -ne $this.Ensure)
-        {
-            if ($this.Ensure -eq 'Absent')
+            # We expect the package to be present
+            switch ($comparePackage.SideIndicator)
             {
-                $currentState.Reasons += @{
-                    Code   = ('ChocolateyPackage:ChocolateyPackage:ShouldNotBeInstalled')
-                    Phrase = ('The Package ''{0}'' is installed with version ''{1}'' but is NOT expected to be present.' -f $currentState.Name, $currentState.Version)
-                }
-            }
-            else
-            {
-                $currentState.Reasons += @{
-                    Code   = ('ChocolateyPackage:ChocolateyPackage:ShouldBeInstalled')
-                    Phrase = ('The Package ''{0}'' is not installed but is expected to be present.' -f $currentState.Name)
-                }
-            }
-        }
-        else
-        {
-            Write-Debug -Message ('The package named ''{0}'' is ''Present'' with version ''{1}'' while we expect version ''{2}''.' -f $this.Name, $currentState.Version,$this.Version)
-            if ('latest' -eq $this.Version)
-            {
-                Write-Debug -Message ('  Grabbing the latest version of ''{0}'' from source.' -f $this.Name)
-                $searchVersionParam = @{
-                    Exact = $true
-                    Name  = $this.Name
-                }
-
-                if ($this.ChocolateyOptions -and $this.ChocolateyOptions.ContainsKey('source'))
+                '='
                 {
-                    Write-Debug -Message ('  Searching in specified source ''{0}''.' -f $this.ChocolateyOptions['source'])
-                    $searchVersionParam['source'] = $this.ChocolateyOptions['source']
-                }
-
-                Write-Debug -Message ('  Searching with ''Get-ChocolateyPackage'' and parameters {0}' -f ($searchVersionParam | ConvertTo-Json -Depth 3))
-                $refVersionPackage = Get-ChocolateyPackage @searchVersionParam
-
-                if ($null -eq $refVersionPackage)
-                {
-                    Write-Debug -Message ('The package ''{0}'' could not be found on the source repository.' -f $this.Name)
-                    $refVersion = $null
+                    $currentState.Ensure = 'Present'
                     $currentState.Reasons += @{
-                        Code   = ('ChocolateyPackage:ChocolateyPackage:LatestPackageNotFound')
-                        Phrase = ('The Package ''{0}'' is installed with version ''{1}'' but couldn''t be found on the source.' -f $currentState.Name, $currentState.Version, $this.Version)
+                        Code   = ('ChocolateyPackage:ChocolateyPackage:Compliant')
+                        Phrase = ('The Package ''{0}'' is installed with expected version ''{1}''.' -f $currentState.Name, $currentState.Version)
                     }
                 }
-                else
-                {
-                    $refVersion = $refVersionPackage.Version
-                    Write-Debug -Message ('Latest version for ''{0}'' found in source is ''{1}''.' -f $this.Name, $refVersion)
-                }
-            }
-            else
-            {
-                $refVersion = $this.Version
-            }
 
-            if ([string]::IsNullOrEmpty($refVersion))
-            {
-                # No need to check for version because the 'LatestPackageNotFound' on source...
-            }
-            elseif ((Compare-SemVerVersion -ReferenceVersion $refVersion -DifferenceVersion $currentState.version) -in @('=', '<'))
-            {
-                $currentState.Reasons += @{
-                    Code   = ('ChocolateyPackage:ChocolateyPackage:Compliant')
-                    Phrase = ('The Package ''{0}'' is installed with version ''{1}'' higher or equal than the expected ''{2}'' (''{3}'').' -f $currentState.Name, $currentState.Version, $this.Version, $refVersion)
+                '>'
+                {
+                    $currentState.Ensure = 'Present'
+                    $currentState.Reasons += @{
+                        Code   = ('ChocolateyPackage:ChocolateyPackage:Compliant')
+                        Phrase = ('The Package ''{0}'' is installed with version ''{1}'' higher or equal than the expected ''{2}''.' -f $currentState.Name, $currentState.Version, $DesiredState.Version)
+                    }
+                }
+
+                '<'
+                {
+                    $currentState.Ensure = 'Present'
+                    $currentState.Reasons += @{
+                        Code   = ('ChocolateyPackage:ChocolateyPackage:BelowExpectedVersion')
+                        Phrase = ('The Package ''{0}'' is installed with version ''{1}'' Lower than the expected ''{2}''.' -f $currentState.Name, $currentState.Version, $DesiredState.Version)
+                    }
+                }
+
+                '!'
+                {
+                    if ($DesiredState.UpdateOnly -and $DesiredState.Ensure -eq 'Present')
+                    {
+                        Write-Verbose -Message ('Skipping install of ''{0}'' because ''UpdateOnly'' is set.' -f $DesiredState.Name)
+                        $currentState.Ensure = 'Absent'
+                        $currentState.Reasons += @{
+                            Code   = ('ChocolateyPackage:ChocolateyPackage:Compliant')
+                            Phrase = ('The Package ''{0}'' is not installed as desired (UpdateOnly set).' -f $currentState.Name)
+                        }
+                    }
+                    else
+                    {
+                        $currentState.Ensure = 'Absent'
+                        $currentState.Reasons += @{
+                            Code   = ('ChocolateyPackage:ChocolateyPackage:ShouldBeInstalled')
+                            Phrase = ('The Package ''{0}'' is not installed but is expected to be present.' -f $currentState.Name)
+                        }
+                    }
+                }
+
+                default
+                {
+                    Write-Debug -Message ('Unknown SideIndicator ''{0}'' returned by Compare-ChocolateyPackageInstalled.' -f $comparePackage.SideIndicator)
+                    $localPackage = $null
+                    $currentState.Reasons += @{
+                        code = 'ChocolateyPackage:ChocolateyPackage:UnknownSideIndicator'
+                        phrase = ('Unknown SideIndicator ''{0}'' returned by Compare-ChocolateyPackageInstalled.' -f $comparePackage.SideIndicator)
+                    }
                 }
             }
-            else
+        }
+        else
+        {
+            # We expect the package to be absent
+            # if version is specified, we want that version to not be installed
+            #  but another version installed is ok
+            # if version is not specified, we don't want the package present at all
+
+            switch ($comparePackage.SideIndicator)
             {
-                $currentState.Reasons += @{
-                    Code   = ('ChocolateyPackage:ChocolateyPackage:BelowExpectedVersion')
-                    Phrase = ('The Package ''{0}'' is installed with version ''{1}'' Lower than the expected ''{2}''.' -f $currentState.Name, $currentState.Version, $this.Version)
+                '!'
+                {
+                    $currentState.Ensure = 'Absent'
+                    $currentState.Reasons += @{
+                        Code   = ('ChocolateyPackage:ChocolateyPackage:Compliant')
+                        Phrase = ('The Package ''{0}'' is not installed as desired.' -f $currentState.Name)
+                    }
+                }
+
+                '='
+                {
+                    if ([string]::IsNullOrEmpty($DesiredState.Version))
+                    {
+                        # Any version is not expected
+                        $currentState.Ensure = 'Present'
+                        $currentState.Reasons += @{
+                            Code   = ('ChocolateyPackage:ChocolateyPackage:ShouldNotBeInstalled')
+                            Phrase = ('The Package ''{0}'' is installed with version ''{1}'' but is NOT expected to be present.' -f $currentState.Name, $currentState.Version)
+                        }
+                    }
+                    else
+                    {
+                        # A version is expected to be absent, and that version is present
+                        $currentState.Ensure = 'Present'
+                        $currentState.Reasons += @{
+                            Code   = ('ChocolateyPackage:ChocolateyPackage:VersionShouldNotBeInstalled')
+                            Phrase = ('The Package ''{0}'' is installed with version ''{1}'' which is the version expected absent: ''{2}''.' -f $currentState.Name, $currentState.Version, $DesiredState.Version)
+                        }
+                    }
+                }
+
+                '>'
+                {
+                    if ([string]::IsNullOrEmpty($DesiredState.Version))
+                    {
+                        # Any version is not expected
+                        $currentState.Ensure = 'Present'
+                        $currentState.Reasons += @{
+                            Code   = ('ChocolateyPackage:ChocolateyPackage:ShouldNotBeInstalled')
+                            Phrase = ('The Package ''{0}'' is installed with version ''{1}'' but is NOT expected to be present.' -f $currentState.Name, $currentState.Version)
+                        }
+                    }
+                    else
+                    {
+                        # A version is expected to be absent, but a higher version is present
+                        $currentState.Ensure = 'Present'
+                        $currentState.Reasons += @{
+                            Code   = ('ChocolateyPackage:ChocolateyPackage:Compliant')
+                            Phrase = ('The Package ''{0}'' is installed with version ''{1}'' higher than the expected absent ''{2}''.' -f $currentState.Name, $currentState.Version, $DesiredState.Version)
+                        }
+                    }
+                }
+
+                '<'
+                {
+                    if ([string]::IsNullOrEmpty($DesiredState.Version))
+                    {
+                        # Any version is not expected
+                        $currentState.Ensure = 'Present'
+                        $currentState.Reasons += @{
+                            Code   = ('ChocolateyPackage:ChocolateyPackage:ShouldNotBeInstalled')
+                            Phrase = ('The Package ''{0}'' is installed with version ''{1}'' but is NOT expected to be present.' -f $currentState.Name, $currentState.Version)
+                        }
+                    }
+                    else
+                    {
+                        # A version is expected to be absent, but a lower version is present
+                        $currentState.Ensure = 'Present'
+                        $currentState.Reasons += @{
+                            Code   = ('ChocolateyPackage:ChocolateyPackage:BelowUnapprovedVersion')
+                            Phrase = ('The Package ''{0}'' is installed with version ''{1}'' Lower than the version expected absent: ''{2}''.' -f $currentState.Name, $currentState.Version, $DesiredState.Version)
+                        }
+                    }
+                }
+
+                default
+                {
+                    Write-Debug -Message ('Unknown SideIndicator ''{0}'' returned by Compare-ChocolateyPackageInstalled.' -f $comparePackage.SideIndicator)
+                    $localPackage = $null
+                    $currentState.Reasons += @{
+                        code = 'ChocolateyPackage:ChocolateyPackage:UnknownSideIndicator'
+                        phrase = ('Unknown SideIndicator ''{0}'' returned by Compare-ChocolateyPackageInstalled.' -f $comparePackage.SideIndicator)
+                    }
                 }
             }
         }
@@ -203,71 +274,141 @@ class ChocolateyPackage
         return $currentState
     }
 
-    [bool] Test()
+    [ChocolateyPackage] Get()
     {
-        $currentState = $this.Get()
+        return [ChocolateyPackage]::Get($this)
+    }
 
-        if ($currentState.Reasons.Code.Where({$_ -in @('BelowExpectedVersion','ShouldBeInstalled','ShouldNotBeInstalled')}))
+    static [DscChocoTestResult] Test([ChocolateyPackage] $DesiredState)
+    {
+        $currentState = [ChocolateyPackage]::Get($DesiredState)
+        [DscChocoTestResult] $result = [DscChocoTestResult]::new()
+
+        if ($currentState.Reasons.Code.Where({$_ -notmatch ':Compliant$'}))
         {
-            return $false
+            $result.Passed = $false
         }
         else
         {
-            return $true
+            $result.Passed = $true
         }
+
+        return $result
     }
 
-    [void] Set()
+    [bool] Test()
     {
-        [ChocolateyPackage] $currentState = $this.Get()
-        $chocoCommand = Get-Command -Name 'Install-ChocolateyPackage'
-        [hashtable] $chocoCommandParams = @{
-            Name        = $this.Name
-            Confirm     = $false
-            ErrorAction = 'Stop'
-        }
+        return [ChocolateyPackage]::Test($this).Passed
+    }
 
-        switch -Regex ($currentState.Reasons.Code)
+    # static [bool] Validate([MyResource]$instance) {}
+    # static [hashtable] Schema() {}
+
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSDSCReturnCorrectTypesForDSCFunctions", "")]
+    static [DscChocoSetResult] Set([ChocolateyPackage] $DesiredState)
+    {
+        $currentState = [ChocolateyPackage]::Get($DesiredState)
+        return ([ChocolateyPackage]::Set($currentState, $DesiredState, $false))
+    }
+
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSDSCReturnCorrectTypesForDSCFunctions", "")]
+    static [DscChocoSetResult] Set([ChocolateyPackage] $CurrentState, [ChocolateyPackage] $DesiredState)
+    {
+        return ([ChocolateyPackage]::Set($CurrentState, $DesiredState, $false))
+    }
+
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSDSCReturnCorrectTypesForDSCFunctions", "")]
+    static [DscChocoSetResult] Set([ChocolateyPackage] $CurrentState, [ChocolateyPackage] $DesiredState, [bool] $WhatIf)
+    {
+        $result = [DscChocoSetResult]::new()
+        $chocoCommand = $null
+
+        switch ($CurrentState.Reasons.code)
         {
-            'BelowExpectedVersion$'
+
+            'ChocolateyPackage:ChocolateyPackage:BelowExpectedVersion'
             {
-                Write-Debug -Message ('Upgrading package ''{0}'' to version ''{1}''.' -f $this.Name, $this.Version)
-                $chocoCommand =  Get-Command -Name 'Update-ChocolateyPackage' -Module 'Chocolatey'
+                # upgrade
+                Write-Debug -Message ('Upgrading {0}' -f $DesiredState.Name)
+                $chocoCommand = Get-Command -Name 'Update-ChocolateyPackage'
             }
 
-            'ShouldBeInstalled$'
+            'ChocolateyPackage:ChocolateyPackage:ShouldBeInstalled'
             {
-                $chocoCommand = Get-Command -Name 'Install-ChocolateyPackage' -Module 'Chocolatey'
+                # Install
+                Write-Debug -Message ('Installing {0}' -f $DesiredState.Name)
+                $chocoCommand = Get-Command -Name 'Install-ChocolateyPackage'
+            }
 
-                if ('latest' -eq $this.Version -or [string]::IsNullOrEmpty($this.Version))
+            'ChocolateyPackage:ChocolateyPackage:ShouldNotBeInstalled'
+            {
+                # Uninstall
+                Write-Debug -Message ('Uninstalling {0} version {1}' -f $DesiredState.Name, $DesiredState.Version)
+                $chocoCommand = Get-Command -Name 'Uninstall-ChocolateyPackage'
+            }
+
+            'ChocolateyPackage:ChocolateyPackage:VersionShouldNotBeInstalled'
+            {
+                if ($DesiredState.UpgradeOnly)
                 {
-                    Write-Debug -Message ('Installing the ''latest'' version of ''{0}'' from the configured or specified source.' -f $this.Name)
+                    # Upgrade
+                    Write-Debug -Message ('Upgrading {0}' -f $DesiredState.Name)
+                    $chocoCommand = Get-Command -Name 'Update-ChocolateyPackage'
                 }
                 else
                 {
-                    Write-Debug -Message ('Installing package ''{0}'' to version ''{1}''.' -f $this.Name, $this.Version)
-                    $chocoCommandParams['Version'] = $this.Version
+                    # Uninstall
+                    Write-Debug -Message ('Uninstalling {0} version {1}' -f $DesiredState.Name, $DesiredState.Version)
+                    $chocoCommand = Get-Command -Name 'Uninstall-ChocolateyPackage'
                 }
             }
 
-            'ShouldNotBeInstalled$'
+            'ChocolateyPackage:ChocolateyPackage:BelowUnapprovedVersion'
             {
-                $chocoCommand = Get-Command -Name 'Uninstall-ChocolateyPackage' -Module 'Chocolatey'
+                if ($DesiredState.UpgradeOnly)
+                {
+                    # Upgrade
+                    Write-Debug -Message ('Upgrading {0}' -f $DesiredState.Name)
+                    $chocoCommand = Get-Command -Name 'Update-ChocolateyPackage'
+                }
+                else
+                {
+                    # Uninstall
+                    Write-Debug -Message ('Uninstalling {0} version {1}' -f $DesiredState.Name, $DesiredState.Version)
+                    $chocoCommand = Get-Command -Name 'Uninstall-ChocolateyPackage'
+                }
+            }
+
+            'ChocolateyPackage:ChocolateyPackage:UnknownSideIndicator'
+            {
+                # Unsupported error, surface message
+                Write-Error -Message ('Unsupported error occurred while processing {0}.' -f $DesiredState.Name)
+            }
+
+            Default
+            {
+                # Unsupported Code Path
+                Write-Error -Message ('Unsupported code path encountered while processing {0}.' -f $DesiredState.Name)
             }
         }
 
-        if ($this.UpdateOnly -and $chocoCommand.Name -eq 'Install-ChocolateyPackage')
-        {
-            Write-Verbose -Message ('Skipping install of ''{0}'' because ''UpdateOnly'' is set.' -f $this.Name)
-            return
+        $chocoCommandParams = @{
+            Name    = $DesiredState.Name
+            confirm = $false
+            ErrorAction = 'Stop'
         }
 
-        if ($this.Credential)
+        if (-not [string]::IsNullOrEmpty($DesiredState.Version) -and $DesiredState.Version -ne 'latest')
         {
-            $chocoCommandParams['Credential'] = $this.Credential
+            $chocoCommandParams['Version'] = $DesiredState.Version
         }
 
-        $this.ChocolateyOptions.keys.Where{$_ -notin $chocoCommandParams.Keys}.Foreach{
+        if (-not [string]::IsNullOrEmpty($DesiredState.Source))
+        {
+            $chocoCommandParams['Source'] = $DesiredState.Source
+        }
+
+        $DesiredState.ChocolateyOptions.keys.Where{$_ -notin $chocoCommandParams.Keys}.Foreach{
             if ($chocoCommand.Parameters.Keys -contains $_)
             {
                 if ($this.ChocolateyOptions[$_] -in @('True','False'))
@@ -285,7 +426,85 @@ class ChocolateyPackage
             }
         }
 
-        Write-Verbose -Message ('  Calling ''{0}'' with parameters {1}.' -f $chocoCommand.Name,($chocoCommandParams | ConvertTo-Json -Depth 3))
-        &$($chocoCommand.Name) @ChocoCommandParams
+        try
+        {
+            if ($null -ne $chocoCommand)
+            {
+                Write-verbose -Message ('---> Executing command {0} with param <{1}>' -f $chocoCommand.Name, ($chocoCommandParams | ConvertTo-Json -Depth 4))
+                $result.messages += &$chocoCommand @chocoCommandParams
+            }
+        }
+        catch
+        {
+            Write-Verbose -Message ('Exception Caught:' -f $_)
+            $result.messages += ('Error: {0}.' -f $_)
+        }
+
+        $result.After = [ChocolateyPackage]::Get($DesiredState)
+        #TODO: not a big fan of always having to call Get() to populate After state
+        # it's expensive after all.
+
+        return $result
+    }
+
+    [void] Set()
+    {
+        [ChocolateyPackage] $currentState = $this.Get()
+        $null = [ChocolateyPackage]::Set($currentState, $this, $false)
+    }
+
+    static [void] Delete([ChocolateyPackage] $DesiredState)
+    {
+        $comparePackageParams = @{
+            Name = $DesiredState.Name
+        }
+
+        if ($DesiredState.Version)
+        {
+            $comparePackageParams['Version'] = $DesiredState.Version
+        }
+
+        $ComparedPackage = Compare-ChocolateyPackage -Name $DesiredState.Name
+        if ($ComparedPackage.SideIndicator -ne '!')
+        {
+            Write-Verbose -Message ('Removing package ''{0}''.' -f $DesiredState.Name)
+            Uninstall-ChocolateyPackage -Name $DesiredState.Name -Confirm:$false
+        }
+    }
+
+    static [ChocolateyPackage[]] Export([ChocolateyPackage] $FilteringInstance)
+    {
+        return ([ChocolateyPackage]::Export().Where{
+            if ([string]::IsNullOrEmpty($FilteringInstance.Name))
+            {
+                $true
+            }
+            else
+            {
+                $_.Name -eq $FilteringInstance.Name
+            }
+        })
+    }
+
+    static [ChocolateyPackage[]] Export()
+    {
+        try
+        {
+            $allPackages = Get-ChocolateyPackage
+            [ChocolateyPackage[]]$result = $allPackages.Foreach{
+                ([ChocolateyPackage]@{
+                    Ensure  = 'Present'
+                    Name    = $_.Name
+                    Version = $_.Version
+                }).Get() #TODO: is it necessary to call the Get() to populate the Reasons?
+            }
+
+            return $result
+        }
+        catch
+        {
+            Write-Verbose -Message ('Exception Caught:' -f $_)
+            return @()
+        }
     }
 }

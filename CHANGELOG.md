@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Refactoring the codebase to improve quality and relevance to latest chocolatey versions.
 - Modified project with new Sampler template.
 - Invoking choco commands now always add `--no-progress` & `--limit-output`.
 - Limiting Get-Command choco to the first result as per [#69](https://github.com/chocolatey-community/Chocolatey/issues/69) on all calls.

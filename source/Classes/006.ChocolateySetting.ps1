@@ -27,7 +27,7 @@
         # This example shows how to set the Setting webRequestTimeoutSeconds using Invoke-DscResource.
 #>
 [DscResource()]
-class ChocolateySetting
+class ChocolateySetting : ChocolateyBase
 {
     [DscProperty()]
     [Ensure] $Ensure = 'Present'

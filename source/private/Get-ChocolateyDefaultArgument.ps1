@@ -22,6 +22,10 @@ Source uri (whether local or remote)
 .PARAMETER Disabled
 Specify whethere the element targeted should be disabled or enabled (by default).
 
+.PARAMETER RunNonElevated
+Throws if the process is not running elevated. use -RunNonElevated if you really want to run
+even if the current shell is not elevated.
+
 .PARAMETER BypassProxy
 Bypass the proxy for fetching packages on a feed.
 
@@ -238,7 +242,7 @@ Should install arguments be used exclusively without appending to current packag
 #>
 function Get-ChocolateyDefaultArgument
 {
-    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'None')]
+    [CmdletBinding()]
     [OutputType([collections.generic.list[string]])]
     param
     (
@@ -255,6 +259,10 @@ function Get-ChocolateyDefaultArgument
 
         [Parameter(ValueFromPipelineByPropertyName = $true)]
         $Value,
+
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [Switch]
+        $Confirm,
 
         [Parameter(ValueFromPipelineByPropertyName = $true)]
         [Switch]
@@ -454,11 +462,15 @@ function Get-ChocolateyDefaultArgument
 
         [Parameter(ValueFromPipelineByPropertyName = $true)]
         [Switch]
-        $FailOnAutouninstaller,
+        $FailOnAutoUninstaller,
 
         [Parameter(ValueFromPipelineByPropertyName = $true)]
         [Switch]
         $IgnoreAutoUninstallerFailure,
+
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [Switch]
+        $RunNonElevated,
 
         [Parameter()]
         #To be used when Password is too long (>240 char) like a key
@@ -467,12 +479,18 @@ function Get-ChocolateyDefaultArgument
 
         [Parameter()]
         [string]
-        $Key
+        $Key,
+
+        [Parameter()]
+        [switch]
+        $IncludeConfiguredSources
     )
 
     process
     {
         [collections.generic.list[string]] $ChocoArguments = [collections.generic.list[string]]::new()
+        # Always use -r or --limit-output and never add --verbose or --debug
+        # or it will pollute the parsable output
         $Arguments = switch ($PSBoundParameters.Keys)
         {
             'Value'
@@ -490,18 +508,22 @@ function Get-ChocolateyDefaultArgument
             {
                 "--allow-self-service"
             }
+
             'Name'
             {
                 "--name=`"$Name`""
             }
+
             'Source'
             {
                 "-s`"$Source`""
             }
+
             'ByPassProxy'
             {
                 "--bypass-proxy"
             }
+
             'CacheLocation'
             {
                 "--cache-location=`"$CacheLocation`""
@@ -524,16 +546,21 @@ function Get-ChocolateyDefaultArgument
             }
             'Verbose'
             {
-                '--verbose'
+                # do not add verbose or it will pollute the parsable output
+                # '--verbose'
             }
             'Debug'
             {
-                '--debug'
+                # do not add debug or it will pollute the parsable output
+                ## '--debug'
             }
+
+            # always set '--no-progress'
             'NoProgress'
             {
                 '--no-progress'
             }
+
             'Credential'
             {
                 if ($Credential.Username)
@@ -545,6 +572,7 @@ function Get-ChocolateyDefaultArgument
                     "--password=`"$($Credential.GetNetworkCredential().Password)`""
                 }
             }
+
             'KeyUser'
             {
                 "--user=`"$KeyUser`""
@@ -594,18 +622,27 @@ function Get-ChocolateyDefaultArgument
             {
                 '--by-tag-only'
             }
+
             'ByIdOnly'
             {
                 '--by-id-only'
             }
+
             'LocalOnly'
             {
                 '--local-only'
             }
+
             'IdStartsWith'
             {
                 '--id-starts-with'
             }
+
+            'IncludeConfiguredSources'
+            {
+                '--include-configured-sources'
+            }
+
             'ApprovedOnly'
             {
                 '--approved-only'
@@ -789,16 +826,20 @@ function Get-ChocolateyDefaultArgument
             }
         }
 
-
-        if ($PSCmdlet.ShouldProcess('Returning Choco arguments','return'))
-        {
-            $Arguments.Foreach{
-                $null = $ChocoArguments.Add($_)
-            }
-
-            $null = $ChocoArguments.Add('--no-progress')
-            $null = $ChocoArguments.Add('--limit-output')
-            return $ChocoArguments
+        $Arguments.Foreach{
+            $null = $ChocoArguments.Add($_)
         }
+
+        if ($ChocoArguments -notcontains '--no-progress' -and $ChocoArguments -notcontains '-n')
+        {
+            $null = $ChocoArguments.Add('--no-progress')
+        }
+
+        if ($ChocoArguments -notcontains '-r' -and $ChocoArguments -notcontains '--limit-output')
+        {
+            $null = $ChocoArguments.Add('--limit-output')
+        }
+
+        return $ChocoArguments
     }
 }
