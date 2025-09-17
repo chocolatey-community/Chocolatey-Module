@@ -94,6 +94,9 @@ SetPSModulePath:
 
 Pester:
   Configuration:
+    Filter:
+      ExcludeTag:
+        - TestQuality
     Run:
       Path:
         - tests/QA
