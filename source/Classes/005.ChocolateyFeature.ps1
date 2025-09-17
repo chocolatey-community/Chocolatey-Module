@@ -24,7 +24,7 @@
         # This example shows how to disable the feature showDownloadProgress using Invoke-DscResource.
 #>
 [DscResource()]
-class ChocolateyFeature
+class ChocolateyFeature : ChocolateyBase
 {
     [DscProperty()]
     [Ensure] $Ensure = 'Present'

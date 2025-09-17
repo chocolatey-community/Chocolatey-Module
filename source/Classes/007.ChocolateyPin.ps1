@@ -23,7 +23,7 @@
         # This example shows how to set the Pin webRequestTimeoutSeconds using Invoke-DscResource.
 #>
 [DscResource()]
-class ChocolateyPin
+class ChocolateyPin : ChocolateyBase
 {
     [DscProperty()]
     [Ensure] $Ensure = 'Present'

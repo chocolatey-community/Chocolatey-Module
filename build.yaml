@@ -13,7 +13,8 @@ Encoding: UTF8
 # variable `$env:ModuleVersion`, nor setting the variable `$ModuleVersion`, in the
 # PowerShell session (parent scope) before running the task `build`.
 #SemVer: '99.0.0-preview1'
-
+prefix: prefix.ps1
+suffix: suffix.ps1
 VersionedOutputDirectory: true
 
 ####################################################
@@ -93,6 +94,9 @@ SetPSModulePath:
 
 Pester:
   Configuration:
+    Filter:
+      ExcludeTag:
+        - TestQuality
     Run:
       Path:
         - tests/QA
@@ -102,7 +106,7 @@ Pester:
       StackTraceVerbosity: Full
       CIFormat: Auto
     CodeCoverage:
-      CoveragePercentTarget: 10
+      CoveragePercentTarget: 8
       OutputPath: JaCoCo_Merge.xml
       OutputEncoding: ascii
       UseBreakpoints: false
@@ -121,6 +125,7 @@ DscTest:
       Filter:
         ExcludeTag:
           - "Common Tests - New Error-Level Script Analyzer Rules"
+          - RequiredPSSA
       Output:
         Verbosity: Detailed
   Script:

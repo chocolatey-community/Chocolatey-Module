@@ -37,7 +37,7 @@ using namespace System.Management.Automation
         # This example shows how to call the resource using Invoke-DscResource.
 #>
 [DscResource()]
-class ChocolateySoftware
+class ChocolateySoftware : ChocolateyBase
 {
     [DscProperty(Key)]
     [Ensure] $Ensure = 'Present'

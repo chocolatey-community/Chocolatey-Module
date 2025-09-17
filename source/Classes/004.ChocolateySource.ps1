@@ -53,7 +53,7 @@
         # This example shows how to call the resource using Invoke-DscResource.
 #>
 [DscResource()]
-class ChocolateySource
+class ChocolateySource : ChocolateyBase
 {
     [DscProperty()]
     [Ensure] $Ensure = 'Present'
@@ -277,6 +277,7 @@ class ChocolateySource
                 $registerChocolateySourceParams = @{
                     Name = $this.Name
                     Source = $this.Source
+                    confirm = $false
                 }
 
                 if (-not [string]::isNullOrEmpty($this.Disabled))
