@@ -242,6 +242,7 @@ Should install arguments be used exclusively without appending to current packag
 #>
 function Get-ChocolateyDefaultArgument
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSupportsShouldProcess ','')]
     [CmdletBinding()]
     [OutputType([collections.generic.list[string]])]
     param
@@ -483,7 +484,11 @@ function Get-ChocolateyDefaultArgument
 
         [Parameter()]
         [switch]
-        $IncludeConfiguredSources
+        $IncludeConfiguredSources,
+
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [Switch]
+        $WhatIf
     )
 
     process

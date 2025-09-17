@@ -1,3 +1,21 @@
+
+<#
+.SYNOPSIS
+    Retrieve the cached list of installed packages.
+
+.DESCRIPTION
+    This command retrieves the cached list of installed packages. If the cache is older than 60 seconds,
+    it will refresh the cache by calling Get-ChocolateyPackage and updating the cache file.
+
+.PARAMETER ChocoInstallPath
+    The path where Chocolatey is installed. If not provided, it will attempt to resolve it automatically.
+
+.EXAMPLE
+    Get-ChocolateyPackageCache
+
+.NOTES
+    This function is intended for internal use only.
+#>
 function Get-ChocolateyPackageCache
 {
     [CmdletBinding()]

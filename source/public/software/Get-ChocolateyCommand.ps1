@@ -1,3 +1,23 @@
+
+<#
+.SYNOPSIS
+    Get the Chocolatey command executable.
+
+.DESCRIPTION
+    This function retrieves the path to the Chocolatey command executable (choco.exe).
+
+.PARAMETER InstallDir
+    The installation directory of Chocolatey.
+
+.PARAMETER Force
+    Whether to force re-evaluation of the Chocolatey command path.
+
+.PARAMETER Force
+    Whether to force re-evaluation of the Chocolatey command path.
+
+.EXAMPLE
+    Get-ChocolateyCommand -InstallDir 'C:\ProgramData\chocolatey' -Force
+#>
 function Get-ChocolateyCommand
 {
     [CmdletBinding()]

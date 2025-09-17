@@ -1,3 +1,20 @@
+
+<#
+.SYNOPSIS
+    Remove the cached list of installed packages.
+
+.DESCRIPTION
+    This command removes the cached list of installed packages.
+
+.PARAMETER ChocoInstallPath
+    The path where Chocolatey is installed. If not provided, it will attempt to resolve it automatically.
+
+.EXAMPLE
+    Remove-ChocolateyPackageCache
+
+.NOTES
+    This function is intended for internal use only.
+#>
 function Remove-ChocolateyPackageCache
 {
     [CmdletBinding()]

@@ -27,7 +27,6 @@ Describe Install-ChocolateySoftware {
             Mock Copy-Item -MockWith {}
             Mock Expand-Archive -MockWith {}
             Mock New-Item -MockWith {}
-            Mock Repair-PowerShellOutputRedirectionBug {}
             Mock Join-Path -ParameterFilter {$ChildPath -eq 'chocolateyInstall.ps1'} -MockWith { {$true} }
         }
 
