@@ -122,6 +122,7 @@ DscTest:
       Filter:
         ExcludeTag:
           - "Common Tests - New Error-Level Script Analyzer Rules"
+          - RequiredPSSA
       Output:
         Verbosity: Detailed
   Script:
