@@ -155,9 +155,6 @@ Should install arguments be used exclusively without appending to current packag
 .PARAMETER Version
     Version - A specific version to install. Defaults to unspecified.
 
-.PARAMETER LocalOnly
-    LocalOnly - Only search against local machine items.
-
 .PARAMETER IdOnly
     Id Only - Only return Package Ids in the list results. Available in 0.10.6+.
 
@@ -236,6 +233,262 @@ Should install arguments be used exclusively without appending to current packag
 
 .PARAMETER Key
     Password - the user's password to the source. Encrypted in chocolatey.config file.
+
+.PARAMETER IncludeConfiguredSources
+    IncludeConfiguredSources - When searching, include all sources from
+
+.PARAMETER WhatIf
+    Simulates the command that would be run by adding.
+    This has no effect but allows to pass PSBoundParameters to the function.
+
+.PARAMETER Force
+    Force - Whether to force the action. Defaults to false.
+
+.PARAMETER Credential
+    Credential - Credential to authenticate to the source feed.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER ProxyCredential
+    ProxyCredential - Credential for the Proxy.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER CacheLocation
+    CacheLocation - Location where the download will be cached.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER InstallArguments
+    InstallArguments - Arguments to pass to the Installer (Not Package args)
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER InstallArgumentsSensitive
+    InstallArgumentsSensitive - Arguments to pass to the Installer that
+    should be obfuscated from log and output.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER PackageParameters
+    PackageParameters - Parameters to pass to the package, that should be
+    handled by the ChocolateyInstall.ps1
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER PackageParametersSensitive
+    PackageParametersSensitive - Arguments to pass to the Package that
+    should be obfuscated from log and output.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER OverrideArguments
+    OverrideArguments - Should install arguments be used exclusively
+    without appending to current package passed arguments.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER NotSilent
+    NotSilent - Do not install this silently. Defaults to false.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER ApplyArgsToDependencies
+    ApplyArgsToDependencies - Should install arguments be applied to
+    dependent packages? Defaults to false.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER AllowDowngrade
+    AllowDowngrade - Should an attempt at downgrading be allowed?
+    Defaults to false.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER IgnoreDependencies
+    IgnoreDependencies - Ignore dependencies when installing package(s).
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER ForceDependencies
+    ForceDependencies - Force dependencies to be reinstalled when force
+    installing package(s). Must be used in conjunction with --force.
+    Defaults to false.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER SkipPowerShell
+    SkipPowerShell - Do not run chocolateyInstall.ps1. Defaults to false.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER IgnoreChecksum
+    IgnoreChecksum - Ignore checksums provided by the package. Overrides
+    the default feature 'checksumFiles' set to 'True'.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER AllowEmptyChecksum
+    AllowEmptyChecksum - Allow packages to have empty/missing checksums
+    for downloaded resources from non-secure locations (HTTP, FTP). Use this
+    switch is not recommended if using sources that download resources from
+    the internet. Overrides the default feature 'allowEmptyChecksums' set to
+    'False'. Available in 0.10.0+.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER ignorePackageCodes
+    IgnorePackageExitCodes - Exit with a 0 for success and 1 for non-success,
+    no matter what package scripts provide for exit codes. Overrides the
+    default feature 'usePackageExitCodes' set to 'True'. Available in 0.-
+    9.10+.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER UsePackageCodes
+    UsePackageExitCodes - Package scripts can provide exit codes. Use those
+    for choco's exit code when non-zero (this value can come from a
+    dependency package). Chocolatey defines valid exit codes as 0, 1605,
+    1614, 1641, 3010.  Overrides the default feature 'usePackageExitCodes'
+    set to 'True'. Available in 0.9.10+.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER StopOnFirstFailure
+    Stop On First Package Failure - stop running install, upgrade or
+    uninstall on first package failure instead of continuing with others.
+    Overrides the default feature 'stopOnFirstPackageFailure' set to 'False-
+    '. Available in 0.10.4+.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER SkipCache
+    Skip Download Cache - Use the original download even if a private CDN
+    cache is available for a package. Overrides the default feature
+    'downloadCache' set to 'True'. Available in 0.9.10+. [Licensed editions](https://chocolatey.org/compare)
+    only. See https://chocolatey.org/docs/features-private-cdn
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER UseDownloadCache
+    Use Download Cache - Use private CDN cache if available for a package.
+    Overrides the default feature 'downloadCache' set to 'True'. Available
+    in 0.9.10+. [Licensed editions](https://chocolatey.org/compare) only. See https://chocolate-
+    y.org/docs/features-private-cdn
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER SkipVirusCheck
+    Skip Virus Check - Skip the virus check for downloaded files on this run.
+    Overrides the default feature 'virusCheck' set to 'True'. Available
+    in 0.9.10+. [Licensed editions](https://chocolatey.org/compare) only.
+    See https://chocolatey.org/docs/features-virus-check
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER VirusCheck
+    Virus Check - check downloaded files for viruses. Overrides the default
+    feature 'virusCheck' set to 'True'. Available in 0.9.10+. Licensed
+    editions only. See https://chocolatey.org/docs/features-virus-check
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER VirusPositive
+    Virus Check Minimum Scan Result Positives - the minimum number of scan
+    result positives required to flag a package. Used when virusScannerType
+    is VirusTotal. Overrides the default configuration value
+    'virusCheckMinimumPositives' set to '5'. Available in 0.9.10+. Licensed
+    editions only. See https://chocolatey.org/docs/features-virus-check
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER OrderByPopularity
+    Order the community packages (chocolatey.org) by popularity.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER Version
+    Version - A specific version to install. Defaults to unspecified.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER LocalOnly
+    LocalOnly - Only search against local machine items.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER IdOnly
+    Id Only - Only return Package Ids in the list results. Available in 0.10.6+.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER Prerelease
+    Prerelease - Include Prereleases? Defaults to false.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER ApprovedOnly
+    ApprovedOnly - Only return approved packages - this option will filter
+    out results not from the [community repository](https://chocolatey.org/packages). Available in 0.9.10+.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER IncludePrograms
+    IncludePrograms - Used in conjunction with LocalOnly, filters out apps
+    chocolatey has listed as packages and includes those in the list.
+    Defaults to false.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER ByIdOnly
+    ByIdOnly - Only return packages where the id contains the search filter.
+    Available in 0.9.10+.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER IdStartsWith
+    IdStartsWith - Only return packages where the id starts with the search
+    filter. Available in 0.9.10+.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER Exact
+    Exact - Only return packages with this exact name. Available in 0.9.10+.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER x86
+    Force the x86 packages on x64 machines.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER AcceptLicense
+    AcceptLicense - Accept license dialogs automatically.
+    Reserved for future use.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER Timeout
+    CommandExecutionTimeout (in seconds) - The time to allow a command to
+    finish before timing out. Overrides the default execution timeout in the
+    configuration of 2700 seconds. '0' for infinite starting in 0.10.4.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER UseRememberedArguments
+    Use Remembered Options for Upgrade - use the arguments and options used
+    during install for upgrade. Does not override arguments being passed at
+    runtime. Overrides the default feature
+    'useRememberedArgumentsForUpgrades' set to 'False'. Available in 0.10.4+.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER IgnoreRememberedArguments
+    Ignore Remembered Options for Upgrade - ignore the arguments and options
+    used during install for upgrade. Overrides the default feature
+    'useRememberedArgumentsForUpgrades' set to 'False'. Available in 0.10.4+.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER ExcludePrerelease
+    Exclude Prerelease - Should prerelease be ignored for upgrades? Will be
+
+.PARAMETER  AutoUninstaller
+    UseAutoUninstaller - Use auto uninstaller service when uninstalling.
+    Overrides the default feature 'autoUninstaller' set to 'True'. Available
+    in 0.9.10+.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER SkipAutoUninstaller
+    SkipAutoUninstaller - Skip auto uninstaller service when uninstalling.
+
+.PARAMETER FailOnAutouninstaller
+    FailOnAutoUninstaller - Fail the package uninstall if the auto
+    uninstaller reports and error. Overrides the default feature
+    'failOnAutoUninstaller' set to 'False'. Available in 0.9.10+.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER IgnoreAutoUninstallerFailure
+    Ignore Auto Uninstaller Failure - Do not fail the package if auto
+
+.PARAMETER KeyUser
+    User - used with authenticated feeds. Defaults to empty.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER Key
+    Password - the user's password to the source. Encrypted in chocolatey.config file.
+
+.PARAMETER IncludeConfiguredSources
+    IncludeConfiguredSources - When searching, include all sources from
+    chocolatey.config that are not already listed as a source.
+
+.PARAMETER Confirm
+    Confirm - Whether to prompt for confirmation. Defaults to false.
+    Allows to pass $PSBoundParameters to the function.
+
+.PARAMETER ByPassCache
+    ByPassCache - Bypass the local cache of packages and get the latest list from
 
 .EXAMPLE
     Get-ChocolateyDefaultArguments @PSBoundparameters
@@ -396,10 +649,6 @@ function Get-ChocolateyDefaultArgument
         [ValidateNotNullOrEmpty()]
         [System.String]
         $Version,
-
-        [Parameter(ValueFromPipelineByPropertyName = $true)]
-        [Switch]
-        $LocalOnly,
 
         [Parameter(ValueFromPipelineByPropertyName = $true)]
         [Switch]
@@ -631,11 +880,6 @@ function Get-ChocolateyDefaultArgument
             'ByIdOnly'
             {
                 '--by-id-only'
-            }
-
-            'LocalOnly'
-            {
-                '--local-only'
             }
 
             'IdStartsWith'
