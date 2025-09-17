@@ -65,11 +65,15 @@ configuration Example {
         }
 
         ChocolateyPackage Putty {
-           DependsOn          = '[ChocolateySoftware]ChocoInst'
-           Ensure            = 'Present'
-           Name              = 'Putty'
-           Version           = 'Latest'
-           ChocolateyOptions = @(@{ source = 'https://chocolatey.org/api/v2/' })
+            DependsOn          = '[ChocolateySoftware]ChocoInst'
+            Ensure            = 'Present'
+            Name              = 'Putty'
+            Version           = 'Latest'
+            ChocolateyOptions = @(
+            @{
+                source = 'https://chocolatey.org/api/v2/'
+            }
+        )
         }
     }
 }

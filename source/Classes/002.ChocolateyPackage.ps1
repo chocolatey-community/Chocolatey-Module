@@ -101,7 +101,6 @@ class ChocolateyPackage : ChocolateyBase
         catch
         {
             Write-Verbose -Message ('Exception Caught:' -f $_)
-            $localPackage = $null
             $currentState.Reasons += @{
                 code = 'ChocolateyPackage:ChocolateyPackage:ChocolateyError'
                 phrase = ('Error: {0}.' -f $_)
@@ -167,7 +166,6 @@ class ChocolateyPackage : ChocolateyBase
                 default
                 {
                     Write-Debug -Message ('Unknown SideIndicator ''{0}'' returned by Compare-ChocolateyPackageInstalled.' -f $comparePackage.SideIndicator)
-                    $localPackage = $null
                     $currentState.Reasons += @{
                         code = 'ChocolateyPackage:ChocolateyPackage:UnknownSideIndicator'
                         phrase = ('Unknown SideIndicator ''{0}'' returned by Compare-ChocolateyPackageInstalled.' -f $comparePackage.SideIndicator)
@@ -262,7 +260,6 @@ class ChocolateyPackage : ChocolateyBase
                 default
                 {
                     Write-Debug -Message ('Unknown SideIndicator ''{0}'' returned by Compare-ChocolateyPackageInstalled.' -f $comparePackage.SideIndicator)
-                    $localPackage = $null
                     $currentState.Reasons += @{
                         code = 'ChocolateyPackage:ChocolateyPackage:UnknownSideIndicator'
                         phrase = ('Unknown SideIndicator ''{0}'' returned by Compare-ChocolateyPackageInstalled.' -f $comparePackage.SideIndicator)
@@ -303,7 +300,6 @@ class ChocolateyPackage : ChocolateyBase
 
     # static [bool] Validate([MyResource]$instance) {}
     # static [hashtable] Schema() {}
-
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSDSCReturnCorrectTypesForDSCFunctions", "")]
     static [DscChocoSetResult] Set([ChocolateyPackage] $DesiredState)
     {
@@ -325,7 +321,6 @@ class ChocolateyPackage : ChocolateyBase
 
         switch ($CurrentState.Reasons.code)
         {
-
             'ChocolateyPackage:ChocolateyPackage:BelowExpectedVersion'
             {
                 # upgrade

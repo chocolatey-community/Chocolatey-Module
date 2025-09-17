@@ -1,4 +1,4 @@
 class ChocolateyBase
 {
-
+    # Base class
 }

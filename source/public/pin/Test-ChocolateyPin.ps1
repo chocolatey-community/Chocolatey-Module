@@ -38,7 +38,7 @@ function Test-ChocolateyPin
         # Validate choco is installed or die. Will load the exe path from module cache.
         # Should you want to specify an installation directory,
         # you have to call Get-ChocolateyCommand -InstallDir <path> -Force to set the cache.
-        $chocoCmd = Get-ChocolateyCommand
+        $null = Get-ChocolateyCommand
     }
 
     process
