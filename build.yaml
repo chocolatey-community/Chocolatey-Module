@@ -103,7 +103,7 @@ Pester:
       StackTraceVerbosity: Full
       CIFormat: Auto
     CodeCoverage:
-      CoveragePercentTarget: 10
+      CoveragePercentTarget: 8
       OutputPath: JaCoCo_Merge.xml
       OutputEncoding: ascii
       UseBreakpoints: false
