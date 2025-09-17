@@ -24,6 +24,9 @@
 .PARAMETER Exact
     Exact - Only return packages with this exact name. Available in 0.9.10+.
 
+.PARAMETER ByPassCache
+    ByPassCache - Bypass the local cache of packages and get the latest list from
+
 .EXAMPLE
     Get-ChocolateyPackage -Name chocolatey
 
