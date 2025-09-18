@@ -41,6 +41,18 @@ class ChocolateyPin : ChocolateyBase
     {
         $currentState = [ChocolateyPin]::new()
         $currentState.Name = $this.Name
+        if (-not (Test-ChocolateyInstall))
+        {
+            Write-Debug -Message 'Chocolatey is not installed.'
+            $currentState.Ensure = 'Absent'
+
+            $currentState.Reasons += @{
+                code = 'ChocolateyPin:ChocolateyPin:ChocolateyNotInstalled'
+                phrase = 'The Chocolatey software is not installed. We cannot check if a pin is present.'
+            }
+
+            return $currentState
+        }
 
         try
         {
@@ -146,6 +158,11 @@ class ChocolateyPin : ChocolateyBase
     [void] Set()
     {
         $currentState = $this.Get()
+        if (-not (Test-ChocolateyInstall))
+        {
+            Write-Debug -Message 'Chocolatey is not installed.'
+            throw $currentState.Reasons.Where{$_.Code -match 'ChocolateyNotInstalled$'}.phrase
+        }
 
         switch -Regex ($currentState.Reasons.code)
         {

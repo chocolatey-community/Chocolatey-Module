@@ -72,6 +72,8 @@ class ChocolateyPackage : ChocolateyBase
                 code = 'ChocolateyPackage:ChocolateyPackage:ChocolateyNotInstalled'
                 phrase = 'The Chocolatey software is not installed. We cannot check if a package is present using choco.'
             }
+
+            return $currentState
         }
 
         $comparePackageParams = @{
@@ -313,11 +315,17 @@ class ChocolateyPackage : ChocolateyBase
         return ([ChocolateyPackage]::Set($CurrentState, $DesiredState, $false))
     }
 
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSDSCReturnCorrectTypesForDSCFunctions", "")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSDscReturnCorrectTypesForDSCFunctions", "")]
     static [DscChocoSetResult] Set([ChocolateyPackage] $CurrentState, [ChocolateyPackage] $DesiredState, [bool] $WhatIf)
     {
         $result = [DscChocoSetResult]::new()
         $chocoCommand = $null
+
+        if (-not (Test-ChocolateyInstall))
+        {
+            Write-Debug -Message 'Chocolatey is not installed.'
+            throw $currentState.Reasons.Where{$_.Code -match 'ChocolateyNotInstalled'}.phrase
+        }
 
         switch ($CurrentState.Reasons.code)
         {

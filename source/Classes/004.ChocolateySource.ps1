@@ -95,6 +95,18 @@ class ChocolateySource : ChocolateyBase
     {
         $currentState = [ChocolateySource]::New()
         $currentState.Name = $this.Name
+        if (-not (Test-ChocolateyInstall))
+        {
+            Write-Debug -Message 'Chocolatey is not installed.'
+            $currentState.Ensure = 'Absent'
+
+            $currentState.Reasons += @{
+                code = 'ChocolateySource:ChocolateySource:ChocolateyNotInstalled'
+                phrase = 'The Chocolatey software is not installed. We cannot check if a source is present using choco.'
+            }
+
+            return $currentState
+        }
 
         try
         {
@@ -263,6 +275,11 @@ class ChocolateySource : ChocolateyBase
     [void] Set()
     {
         $currentState = $this.Get()
+        if (-not (Test-ChocolateyInstall))
+        {
+            Write-Debug -Message 'Chocolatey is not installed.'
+            throw $currentState.Reasons.Where{$_.Code -match 'ChocolateyNotInstalled'}.phrase
+        }
 
         switch -Regex ($currentState.Reasons.Code)
         {

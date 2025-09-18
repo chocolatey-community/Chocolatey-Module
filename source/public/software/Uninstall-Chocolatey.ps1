@@ -73,6 +73,8 @@ function Uninstall-Chocolatey
             return
         }
 
+        $script:ChocoCmd = $null #clear the cached choco command
+
         #all files under $InstallDir
         # Except those in $InstallDir\lib unless $_.Basename -in $chocoFiles
         # Except those in $installDir\bin unless $_.Basename -in $chocoFiles
@@ -86,7 +88,7 @@ function Uninstall-Chocolatey
             )
         }
 
-        Write-Debug ($FilesToRemove -join "`r`n>>  ")
+        Write-Debug -Message ($FilesToRemove -join "`r`n>>  ")
 
         if ($Pscmdlet.ShouldProcess('chocoFiles'))
         {

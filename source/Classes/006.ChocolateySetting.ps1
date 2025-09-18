@@ -45,6 +45,18 @@ class ChocolateySetting : ChocolateyBase
     {
         $currentState = [ChocolateySetting]::new()
         $currentState.Name = $this.Name
+        if (-not (Test-ChocolateyInstall))
+        {
+            Write-Debug -Message 'Chocolatey is not installed.'
+            $currentState.Ensure = 'Absent'
+
+            $currentState.Reasons += @{
+                code = 'ChocolateySetting:ChocolateySetting:ChocolateyNotInstalled'
+                phrase = 'The Chocolatey software is not installed. We cannot check if a setting is present.'
+            }
+
+            return $currentState
+        }
 
         try
         {
@@ -152,6 +164,11 @@ class ChocolateySetting : ChocolateyBase
     [void] Set()
     {
         $currentState = $this.Get()
+        if (-not (Test-ChocolateyInstall))
+        {
+            Write-Debug -Message 'Chocolatey is not installed.'
+            throw $currentState.Reasons.Where{$_.Code -match 'ChocolateyNotInstalled$'}.phrase
+        }
 
         switch ($currentState.Reasons.code)
         {

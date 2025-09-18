@@ -39,6 +39,18 @@ class ChocolateyFeature : ChocolateyBase
     {
         $currentState = [ChocolateyFeature]::new()
         $currentState.Name = $this.Name
+        if (-not (Test-ChocolateyInstall))
+        {
+            Write-Debug -Message 'Chocolatey is not installed.'
+            $currentState.Ensure = 'Absent'
+
+            $currentState.Reasons += @{
+                code = 'ChocolateyFeature:ChocolateyFeature:ChocolateyNotInstalled'
+                phrase = 'The Chocolatey software is not installed. We cannot check if a feature is present.'
+            }
+
+            return $currentState
+        }
 
         try
         {
@@ -122,6 +134,11 @@ class ChocolateyFeature : ChocolateyBase
     [void] Set()
     {
         $currentState = $this.Get()
+        if (-not (Test-ChocolateyInstall))
+        {
+            Write-Debug -Message 'Chocolatey is not installed.'
+            throw $currentState.Reasons.Where{$_.Code -match 'ChocolateyNotInstalled'}.phrase
+        }
 
         switch -Regex ($currentState.Reasons.code)
         {
