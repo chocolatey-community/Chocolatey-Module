@@ -153,11 +153,13 @@ function Install-ChocolateySoftware
                 }
                 else
                 {
-                    $url = 'https://chocolatey.org/api/v2'
+                    $url = 'https://community.chocolatey.org/api/v2'
                 }
 
                 Write-Verbose -Message 'Getting latest version of the Chocolatey package for download.'
-                $url = '{0}/Packages()?`$filter=((Id%20eq%20%27chocolatey%27)%20and%20(not%20IsPrerelease))%20and%20IsLatestVersion' -f $url
+                $queryString = [uri]::EscapeUriString("((Id eq 'chocolatey') and (not IsPrerelease)) and IsLatestVersion")
+                $url = '{0}/Packages()?$filter={1}' -f $url, $queryString
+                # $url = '{0}/Packages()?`$filter=((Id%20eq%20%27chocolatey%27)%20and%20(not%20IsPrerelease))%20and%20IsLatestVersion' -f $url
                 Write-Debug -Message ('Retrieving Binary URL from Package Metadata: {0}' -f $url)
 
                 $getRemoteStringParams = @{
@@ -173,7 +175,7 @@ function Install-ChocolateySoftware
                 }
 
                 [xml]$result = Get-RemoteString @getRemoteStringParams
-                Write-Debug "New URL for nupkg: $url"
+                Write-Debug -Message "New URL for nupkg: $url"
                 $url = $result.feed.entry.content.src
             }
         }
@@ -188,7 +190,7 @@ function Install-ChocolateySoftware
 
     if ([string]::IsNullOrEmpty($env:TEMP))
     {
-        $env:TEMP = Join-Path $Env:SYSTEMDRIVE 'temp'
+        $env:TEMP = Join-Path -Path $Env:SYSTEMDRIVE -ChildPath 'temp'
     }
 
     $tempDir = [io.path]::Combine($Env:TEMP, 'chocolatey', 'chocInstall')
@@ -205,11 +207,11 @@ function Install-ChocolateySoftware
         file = $file
     }
 
-    $GetRemoteFileParamsName = (get-command Get-RemoteFile).parameters.keys
+    $GetRemoteFileParamsName = (get-command -Name Get-RemoteFile).parameters.keys
     $KeysForRemoteFile = $PSBoundParameters.keys | Where-Object { $_ -in $GetRemoteFileParamsName }
     foreach ($key in $KeysForRemoteFile )
     {
-        Write-Debug "`tWith $key :: $($PSBoundParameters[$key])"
+        Write-Debug "   With $key :: $($PSBoundParameters[$key])"
         $null = $GetRemoteFileParams.Add($key , $PSBoundParameters[$key])
     }
 
