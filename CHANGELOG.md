@@ -32,3 +32,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   making sure it's set to the correct Path.  
 - Fixed the ChocolateySoftware installation and uninstallation
   (using latest community URL).
+- Fixed [#78](https://github.com/chocolatey-community/Chocolatey/issues/78)
+  cleanup the script:ChocoCmd cached module variable.
