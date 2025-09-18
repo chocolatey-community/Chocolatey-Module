@@ -4,6 +4,7 @@
 $typesToExportAsIs = @(
     'ChocolateyReason'
     'ChocolateyPackage'
+    'ChocolateySoftware'
     'ChocolateySource'
     'ChocolateyFeature'
     'ChocolateySetting'

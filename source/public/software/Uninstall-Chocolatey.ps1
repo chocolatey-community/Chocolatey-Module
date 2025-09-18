@@ -98,7 +98,7 @@ function Uninstall-Chocolatey
         [Environment]::SetEnvironmentVariable('ChocolateyInstall', $null, 'Process')
         $AllPaths = [Environment]::GetEnvironmentVariable('Path', 'machine').split(';').where{
             -not [string]::IsNullOrEmpty($_) -and
-            $_ -notmatch ('^{0}\\bin$' -f (regex::escape($InstallDir)))
+            $_ -notmatch ('^{0}\\bin$' -f ([regex]::escape($InstallDir)))
         } | Select-Object -unique
 
         Write-Debug -Message 'Reset the machine Path without choco (and dedupe/no null).'
