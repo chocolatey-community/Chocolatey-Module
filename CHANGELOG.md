@@ -34,3 +34,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (using latest community URL).
 - Fixed [#78](https://github.com/chocolatey-community/Chocolatey/issues/78)
   cleanup the script:ChocoCmd cached module variable.
+- Fixed issue where `Install-ChocolateyPackage` would output messages directly
+  from choco commands.

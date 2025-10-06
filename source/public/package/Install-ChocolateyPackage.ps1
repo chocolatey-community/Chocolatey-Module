@@ -321,7 +321,9 @@ function Install-ChocolateyPackage
                 #Impact confirmed, go choco go!
                 $ChocoArguments += @('-y')
                 Write-Debug -Message ('{0} {1}' -f $chocoCmd, $($ChocoArguments -join ' '))
-                &$chocoCmd $ChocoArguments
+                &$chocoCmd $ChocoArguments | ForEach-Object -Process {
+                    Write-Verbose -Message ('{0}' -f $_)
+                }
             }
         }
     }
