@@ -302,10 +302,7 @@ function Update-ChocolateyPackage
                 $ChocoArguments += @('-y')
                 Write-Debug -Message ('{0} {1}' -f $chocoCmd, $($ChocoArguments -join ' '))
                 &$chocoCmd $ChocoArguments | Foreach-Object -Process {
-                    if (-not [string]::IsNullOrEmpty($_))
-                    {
-                        Write-Verbose -Message $_
-                    }
+                    Write-Verbose -Message ('{0}' -f $_)
                 }
             }
         }

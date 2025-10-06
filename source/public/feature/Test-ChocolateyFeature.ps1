@@ -59,7 +59,7 @@ function Test-ChocolateyFeature
         else
         {
             Write-Verbose -Message ('The Chocolatey Feature {0} is NOT set to {1} as expected.' -f $Name, (@('Disabled', 'Enabled')[([int]$Disabled.ToBool())]))
-            return $False
+            return $false
         }
     }
 }
