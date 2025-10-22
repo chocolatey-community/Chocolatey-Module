@@ -5,6 +5,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2025-10-22
+
 ### Fixed
 
 - Fixed a syntax error ([#85](https://github.com/chocolatey-community/Chocolatey-Module/issues/85)).
