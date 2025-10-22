@@ -124,7 +124,7 @@ function Unregister-ChocolateySource
 
         $ChocoArguments = @('source', 'remove')
         $ChocoArguments += Get-ChocolateyDefaultArgument @PSBoundParameters
-        Write-Verbose -Message ('{0} {1}' -f $($ChocoArguments -join ' '))
+        Write-Verbose -Message ('{0}' -f ($ChocoArguments -join ' '))
 
         &$chocoCmd $ChocoArguments | Foreach-Object -Process {
             Write-Verbose -Message ('{0}' -f $_)
