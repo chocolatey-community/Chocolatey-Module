@@ -40,6 +40,9 @@ class ChocolateyPackage : ChocolateyBase
     [DscProperty(Key)]
     [String] $Name
 
+    [DscProperty(NotConfigurable)]
+    [String] $_name
+
     [DscProperty()]
     [String] $Version
 
@@ -495,11 +498,7 @@ class ChocolateyPackage : ChocolateyBase
         {
             $allPackages = Get-ChocolateyPackage
             [ChocolateyPackage[]]$result = $allPackages.Foreach{
-                ([ChocolateyPackage]@{
-                    Ensure  = 'Present'
-                    Name    = $_.Name
-                    Version = $_.Version
-                }).Get() #TODO: is it necessary to call the Get() to populate the Reasons?
+                Add-Member -InputObject $_ -MemberType NoteProperty -Name '_name' -Value ('{0}_{1}' -f $_.Name, $_.Version) -Force -PassThru
             }
 
             return $result
