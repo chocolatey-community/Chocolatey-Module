@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed a syntax error ([#85](https://github.com/chocolatey-community/Chocolatey-Module/issues/85)).
 
+### Changed
+
+- DSC Resource ChocolateyPackage: Added a property '_name' only during exports
+for DSCv3 that combines Name and Version to uniquely identify package instances.
+- Removed the invocation of .Get() for each returned package to speed up exports.
+
 ## [0.9.1] - 2025-10-22
 
 ### Fixed
