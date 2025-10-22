@@ -61,13 +61,20 @@ function Get-ChocolateySource
 
             foreach ($source in $sourceNodes)
             {
+                [bool]$isDisabled = $false
+                [bool]$isProxyDisabled = $false
+                [bool]$isSelfService = $false
+                $null = [bool]::TryParse($source.bypassProxy,[ref]$isProxyDisabled)
+                $null = [bool]::TryParse($source.disabled,[ref]$isDisabled)
+                $null = [bool]::TryParse($source.selfService,[ref]$isSelfService)
+
                 [PSCustomObject]@{
                     PSTypeName  = 'Chocolatey.Source'
                     Name        = $source.id
                     Source      = $source.value
-                    disabled    = $source.disabled -as [bool]
-                    bypassProxy = $source.bypassProxy -as [bool]
-                    selfService = $source.selfService -as [bool]
+                    disabled    = $isDisabled
+                    bypassProxy = $isProxyDisabled
+                    selfService = $isSelfService
                     priority    = $source.priority -as [int]
                     username    = $source.user
                     password    = $source.password
