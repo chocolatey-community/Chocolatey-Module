@@ -53,6 +53,7 @@
 .PARAMETER RunNonElevated
     Throws if the process is not running elevated. use -RunNonElevated if you really want to run
     even if the current shell is not elevated.
+    This parameter is hidden and serves as a protection against accidental non-elevated runs.
 
 .EXAMPLE
     Unregister-ChocolateySource -Name MyProgetFeed
