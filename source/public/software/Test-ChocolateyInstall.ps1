@@ -31,8 +31,7 @@ function Test-ChocolateyInstall
 
     Write-Verbose -Message 'Loading machine Path Environment variable into session.'
     # This is to reload Path written to registry but not yet loaded into the process.
-    $envPath = [Environment]::GetEnvironmentVariable('Path', 'Machine')
-    [Environment]::SetEnvironmentVariable($envPath, 'Process')
+    Repair-ProcessEnvPath
 
     if (-not [string]::IsNullOrEmpty($InstallDir))
     {
