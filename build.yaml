@@ -44,19 +44,27 @@ BuildWorkflow:
     - Generate_Conceptual_Help
     - Generate_Wiki_Content
 
+  docs:
+    - Generate_Conceptual_Help
+    - Generate_Wiki_Content
+    - Generate_Wiki_Sidebar
+    - Clean_Markdown_Metadata
+    - Package_Wiki_Content
+
   pack:
     - build
     - package_module_nupkg
+    - docs
     - gcpol
 
   hqrmtest:
     # - Set_PSModulePath
     - Invoke_HQRM_Tests_Stop_On_Fail
 
-  ipmopsdsc1: |
-    {
-      Import-Module -Name PSDesiredStateConfiguration -MaximumVersion 1.99 -Passthru
-    }
+  # ipmopsdsc1: |
+  #   {
+  #     Import-Module -Name PSDesiredStateConfiguration -MaximumVersion 1.99 -Passthru
+  #   }
   gcpol:
     - build_guestconfiguration_packages
 
@@ -79,8 +87,6 @@ BuildWorkflow:
     - Publish_Release_To_GitHub
     - Publish_GitHub_Wiki_Content
     # - Create_ChangeLog_GitHub_PR
-
-
 
 SetPSModulePath:
   RemovePersonal: true
@@ -168,6 +174,7 @@ GitHubConfig:
   ReleaseAssets:
     - output/GCPackages/ChocolateyIsInstalled*.zip
     - output/GCPackages/DisableChocolateyCommunitySource*.zip
+    - output/WikiContent.zip
   GitHubConfigUserName: dscbot
   GitHubConfigUserEmail: dsccommunity@outlook.com
   UpdateChangelogOnPrerelease: false
@@ -184,3 +191,18 @@ DscResource.DocGenerator:
       - '_(.+?)_' # Match Italic (underscore)
       - '\*\*(.+?)\*\*' # Match bold
       - '\*(.+?)\*' # Match Italic (asterisk)
+  Publish_GitHub_Wiki_Content:
+    Debug: false
+  Generate_Markdown_For_DSC_Resources:
+    # MofResourceMetadata:
+    #   Type: MofResource
+    #   Category: Resources
+    ClassResourceMetadata:
+      Type: ClassResource
+      Category: Resources
+    # CompositeResourceMetadata:
+    #   Type: CompositeResource
+    #   Category: Resources
+  Generate_Wiki_Sidebar:
+     Debug: false
+     AlwaysOverwrite: true
