@@ -29,6 +29,7 @@
     'DscResource.AnalyzerRules' = 'latest'
     xDscResourceDesigner        = 'latest'
     'DscResource.DocGenerator'  = 'latest'
+    platyPS                     = 'latest'
 
     'GuestConfiguration'        = @{
         version = 'latest'
