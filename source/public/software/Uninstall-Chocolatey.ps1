@@ -98,7 +98,7 @@ function Uninstall-Chocolatey
         Write-Verbose -Message "Removing $InstallDir from the Path and the ChocolateyInstall Environment variable."
         [Environment]::SetEnvironmentVariable('ChocolateyInstall', $null, 'Machine')
         [Environment]::SetEnvironmentVariable('ChocolateyInstall', $null, 'Process')
-        $AllPaths = [Environment]::GetEnvironmentVariable('Path', 'machine').split(';').where{
+        $AllPaths = [Environment]::GetEnvironmentVariable('Path', 'machine').split([io.path]::PathSeparator).where{
             -not [string]::IsNullOrEmpty($_) -and
             $_ -notmatch ('^{0}\\bin$' -f ([regex]::escape($InstallDir)))
         } | Select-Object -unique
@@ -108,8 +108,7 @@ function Uninstall-Chocolatey
         [Environment]::SetEnvironmentVariable('Path', ($AllPaths -Join [io.path]::PathSeparator), 'Machine')
 
         #refresh after uninstall
-        $envPath = [Environment]::GetEnvironmentVariable('Path', 'Machine')
-        [Environment]::SetEnvironmentVariable($envPath, 'process')
+        Repair-ProcessEnvPath -ExcludedPaths @($InstallDir, (Join-Path -Path $InstallDir -ChildPath 'bin'))
         Write-Verbose -Message 'Uninstallation complete'
     }
 }

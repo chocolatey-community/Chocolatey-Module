@@ -282,7 +282,7 @@ function Install-ChocolateySoftware
     if (@($env:Path.ToLower() -split [io.path]::PathSeparator) -notcontains $chocoExePath.ToLower())
     {
         # we can't see the choco bin folder in $env:Path, trying to load from Machine.
-        $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine')
+        Repair-ProcessEnvPath
     }
 
     Write-Verbose -Message 'Ensuring chocolatey.nupkg is in the lib folder'

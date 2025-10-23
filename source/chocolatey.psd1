@@ -9,7 +9,7 @@
 @{
 
     # Script module or binary module file associated with this manifest.
-    RootModule           = 'Chocolatey.psm1'
+    RootModule           = 'chocolatey.psm1'
 
     # Version number of this module.
     ModuleVersion        = '0.0.1'
@@ -27,7 +27,7 @@
     CompanyName          = 'SynEdgy Limited'
 
     # Copyright statement for this module
-    Copyright            = '(c) 2023 Gael Colas. All rights reserved.'
+    Copyright            = '(c) 2025 Gael Colas. All rights reserved.'
 
     # Description of the functionality provided by this module
     Description          = 'This is an unofficial module with DSC resource to Install and configure Chocolatey.'
