@@ -1,9 +1,24 @@
-# Changelog for Chocolatey
+# Changelog for chocolatey
 
 The format is based on and uses the types of changes according to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Created
+
+- Created `Repair-ProcessEnvPath` private function to refresh the process
+  environment Path variable from the Machine environment Path variable,
+  excluding specified paths.
+
+### Fixed
+
+- Updated how the process Path environment variable is refreshed to avoid
+  removing current user or session paths.
+
+### Changed
+
+- Enforced lowercase module name.
 
 ## [0.10.0] - 2025-10-22
 

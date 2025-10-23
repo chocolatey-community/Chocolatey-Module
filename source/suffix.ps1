@@ -1,3 +1,5 @@
+Repair-ProcessEnvPath
+
 #region TypeAccelerator export for classes
 
 # If classes/types are specified here, they won't be fully qualified (careful with conflicts)
