@@ -52,8 +52,7 @@ function Get-ChocolateyCommand
         {
             Write-Debug -Message 'Loading machine Path Environment variable into session.'
             # This is to reload Path written to registry but not yet loaded into the process.
-            $envPath = [Environment]::GetEnvironmentVariable('Path', 'Machine')
-            [Environment]::SetEnvironmentVariable($envPath, 'Process')
+            Repair-ProcessEnvPath
 
             # Lookup for the choco.exe command in Path
             Write-Debug -Message ('Looking up chocolatey from Path.')
