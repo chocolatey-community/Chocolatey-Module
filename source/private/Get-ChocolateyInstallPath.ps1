@@ -23,7 +23,7 @@ function Get-ChocolateyInstallPath
     )
 
     # Update path from registry if not set in process
-    $Env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine')
+    Repair-ProcessEnvPath
 
     # Get ChocolateyInstall path from HKLM
     $chocolateyInstall = [System.Environment]::GetEnvironmentVariable('ChocolateyInstall', 'Machine')

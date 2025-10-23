@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed issue where Test-ChocolateyInstall and Get-ChocolateyCommand would not
   refresh the process environment Path variable correctly.
 
+- Fixed issue where Get-ChocolateyInstallPath was updating the path incorrectly.
+
 ## [0.10.1] - 2025-10-23
 
 ### Created
