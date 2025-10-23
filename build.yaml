@@ -61,10 +61,10 @@ BuildWorkflow:
     # - Set_PSModulePath
     - Invoke_HQRM_Tests_Stop_On_Fail
 
-  # ipmopsdsc1: |
-  #   {
-  #     Import-Module -Name PSDesiredStateConfiguration -MaximumVersion 1.99 -Passthru
-  #   }
+  ipmopsdsc1: |
+    {
+      Import-Module -Name PSDesiredStateConfiguration -MaximumVersion 1.99 -Passthru
+    }
   gcpol:
     - build_guestconfiguration_packages
 
