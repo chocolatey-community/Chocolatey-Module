@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixing the documentation upload step in the build pipeline.
+- Added missing RequiredModules entry for platyPS.
 
 ## [0.10.2] - 2025-10-23
 
