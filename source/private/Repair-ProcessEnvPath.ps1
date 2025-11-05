@@ -24,6 +24,7 @@ excluding the specified paths.
 #>
 function Repair-ProcessEnvPath
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', $null, Scope='Function', Justification = 'Used within the function.')]
     [CmdletBinding()]
     param
     (
@@ -36,22 +37,22 @@ function Repair-ProcessEnvPath
         $ExcludedPaths = @()
     )
 
+    [bool]$pathMissing = $false
     # Store the current $Env:Path
     [string[]]$currentEnvPaths = ($Env:Path -split [IO.Path]::PathSeparator).ForEach{ $_.ToLower().TrimEnd('\') }
     # Add any missing entries from Machine level Path variable
-    [bool]$pathMissing = $false
     [string[]]$machinePaths = [Environment]::GetEnvironmentVariable('Path', 'Machine') -split [IO.Path]::PathSeparator
     $machinePaths.Where{
         # remove empty paths
         -not [string]::IsNullOrEmpty($_) -and
         # remove paths already in current $Env:Path
         -not $currentEnvPaths.Contains($_.ToLower().TrimEnd('\'))
-    }.ForEach{
+    }.ForEach({
         # Add missing paths to $PathVarAtLoadTime
         Write-Debug -Message ("Adding missing Path entry from Machine level: {0}" -f $_)
         $PathVarAtLoadTime += $_
         $pathMissing = $true
-    }
+    })
 
     # excluding any in $ExcludedPaths
     $ExcludedPaths = $ExcludedPaths.ForEach{ $_.ToLower().TrimEnd('\') }
