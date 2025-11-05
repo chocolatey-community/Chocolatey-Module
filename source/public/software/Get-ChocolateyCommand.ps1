@@ -59,7 +59,7 @@ function Get-ChocolateyCommand
             $script:ChocoCmd = @(Get-Command 'choco.exe' -CommandType 'Application' -ErrorAction 'Stop')[0]
         }
 
-        Write-Verbose -Message ('Chocolatey Software found in {0} with file version {1}' -f $script:ChocoCmd.Path, $script:ChocoCmd.Version)
+        Write-Debug -Message ('Chocolatey Software found in {0} with file version {1}' -f $script:ChocoCmd.Path, $script:ChocoCmd.Version)
 
         return $script:ChocoCmd
     }

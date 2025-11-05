@@ -39,6 +39,7 @@ function Repair-ProcessEnvPath
     # Store the current $Env:Path
     [string[]]$currentEnvPaths = ($Env:Path -split [IO.Path]::PathSeparator).ForEach{ $_.ToLower().TrimEnd('\') }
     # Add any missing entries from Machine level Path variable
+    [bool]$pathMissing = $false
     [string[]]$machinePaths = [Environment]::GetEnvironmentVariable('Path', 'Machine') -split [IO.Path]::PathSeparator
     $machinePaths.Where{
         # remove empty paths
@@ -49,6 +50,7 @@ function Repair-ProcessEnvPath
         # Add missing paths to $PathVarAtLoadTime
         Write-Debug -Message ("Adding missing Path entry from Machine level: {0}" -f $_)
         $PathVarAtLoadTime += $_
+        $pathMissing = $true
     }
 
     # excluding any in $ExcludedPaths
@@ -57,8 +59,15 @@ function Repair-ProcessEnvPath
         -not $ExcludedPaths.Contains($_.ToLower().TrimEnd('\'))
     }
 
-    # Finally, set the Process level Path variable
-    Write-Debug -Message ('Setting Process level Path variable: {0}{1}' -f "`r`n",($PathVarAtLoadTime -join "`r`n"))
-    $Env:Path = $PathVarAtLoadTime -join [IO.Path]::PathSeparator
-    [Environment]::SetEnvironmentVariable('Path', $Env:Path, 'Process')
+    # Finally, set the Process level Path variable if needed
+    if ($PathVarAtLoadTime.count -eq $currentEnvPaths.count -and -not $pathMissing)
+    {
+        Write-Debug -Message 'No changes made to Process level Path variable ($Env:Path)'
+    }
+    else
+    {
+        Write-Debug -Message ('Setting Process level Path variable: {0}{1}' -f "`r`n",($PathVarAtLoadTime -join "`r`n"))
+        $Env:Path = $PathVarAtLoadTime -join [IO.Path]::PathSeparator
+        [Environment]::SetEnvironmentVariable('Path', $Env:Path, 'Process')
+    }
 }
