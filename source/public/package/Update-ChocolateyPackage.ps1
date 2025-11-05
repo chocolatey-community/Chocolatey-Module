@@ -12,7 +12,7 @@
     or the current directory '.'
 
 .PARAMETER Version
-    Version - A specific version to install. Defaults to unspecified.
+    Version - A specific version to install. Defaults to latest.
 
 .PARAMETER Source
     Source - The source to find the package(s) to install. Special sources
@@ -157,12 +157,13 @@ function Update-ChocolateyPackage
         [System.String[]]
         $Name,
 
-        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $Version,
+        $Version = 'latest',
 
         [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [System.String]
         $Source,
 
         [Parameter(ValueFromPipelineByPropertyName = $true)]
@@ -289,6 +290,11 @@ function Update-ChocolateyPackage
         if ($PSBoundParameters.ContainsKey('Name'))
         {
             $null = $PSBoundParameters.Remove('Name')
+        }
+
+        if ($PSBoundParameters['Version'] -eq 'Latest')
+        {
+            $null = $PSBoundParameters.Remove('Version')
         }
 
         foreach ($PackageName in $Name)

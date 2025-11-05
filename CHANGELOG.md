@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixing the documentation upload step in the build pipeline.
 - Added missing RequiredModules entry for platyPS.
+- Fixed [#99](https://github.com/chocolatey-community/Chocolatey-Module/issues/99)
+  where Update-ChocolateyPackage would not handle 'latest' version correctly.
 
 ## [0.10.2] - 2025-10-23
 
