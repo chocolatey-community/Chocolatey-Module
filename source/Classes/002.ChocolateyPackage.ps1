@@ -40,7 +40,7 @@ class ChocolateyPackage : ChocolateyBase
     [DscProperty(Key)]
     [String] $Name
 
-    [DscProperty(NotConfigurable)]
+    # [DscProperty(NotConfigurable)]
     [String] $_name
 
     [DscProperty()]
