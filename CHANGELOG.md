@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixing issue #101 where the property `$_name` break DSC v1 compilation.
+
+## [0.10.3] - 2025-10-23
+
+### Fixed
+
 - Fixing the documentation upload step in the build pipeline.
 - Added missing RequiredModules entry for platyPS.
 
