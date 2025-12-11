@@ -253,7 +253,14 @@ function Uninstall-ChocolateyPackage
                 $ChocoArguments += @('-y')
                 Write-Debug -Message ('{0} {1}' -f $chocoCmd, $($ChocoArguments -join ' '))
                 &$chocoCmd $ChocoArguments | Foreach-Object -Process {
-                    Write-Verbose -Message ('{0}' -f $_)
+                    if ($_ -match '^You are uninstalling .* which is likely|\*\.install/\*\.portable|represents discoverability')
+                    {
+                        Write-Warning -Message ('{0}' -f $_)
+                    }
+                    else
+                    {
+                        Write-Verbose -Message ('{0}' -f $_)
+                    }
                 }
             }
         }

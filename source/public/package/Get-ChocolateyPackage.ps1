@@ -95,7 +95,7 @@ function Get-ChocolateyPackage
 
         $chocoArguments += Get-ChocolateyDefaultArgument @PSBoundParameters
 
-        if ($ByPassCache.IsPresent -or $Exact.IsPresent)
+        if ($ByPassCache.IsPresent -or -not $Exact.IsPresent)
         {
             # bypass caching when requested, or when not searching for an exact match
             # (when not doing exact match choco is looking through description)
