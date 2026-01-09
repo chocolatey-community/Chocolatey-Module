@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixing issue #105 where Uninstall-ChocolateySoftware fails.
+- Making version parameter of `Update-ChocolateyPackage` not mandatory.
+
+## [0.10.4] - 2025-12-05
+
+### Fixed
+
 - Fixing issue #101 where the property `$_name` break DSC v1 compilation.
 
 ## [0.10.3] - 2025-10-23

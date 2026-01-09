@@ -157,7 +157,7 @@ function Update-ChocolateyPackage
         [System.String[]]
         $Name,
 
-        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $Version,
