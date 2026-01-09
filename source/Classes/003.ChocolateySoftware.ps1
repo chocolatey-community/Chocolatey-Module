@@ -177,10 +177,10 @@ class ChocolateySoftware : ChocolateyBase
         }
         elseif ($currentState.Reasons.code.Where{$_ -match 'ChocoShouldBeRemoved$'})
         {
-            if ( -not [string]::isNullOrEmpty($this.InstallationDirectory))
+            if ( -not [string]::IsNullOrEmpty($this.InstallationDirectory))
             {
-                Write-Debug -Message ('Uninstall-Chocolatey -InstallationDir ''{0}''' -f $this.InstallationDirectory)
-                $null = Uninstall-Chocolatey -InstallationDir $this.InstallationDirectory -Confirm:$false
+                Write-Debug -Message ('Uninstall-Chocolatey -InstallDir ''{0}''' -f $this.InstallationDirectory)
+                $null = Uninstall-Chocolatey -InstallDir $this.InstallationDirectory -Confirm:$false
             }
             else
             {
