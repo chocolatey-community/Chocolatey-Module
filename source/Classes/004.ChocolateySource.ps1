@@ -161,7 +161,7 @@ class ChocolateySource : ChocolateyBase
         $currentState.ByPassProxy = $localSource.ByPassProxy
         $currentState.SelfService = $localSource.SelfService
         $currentState.Priority = $localSource.Priority
-        $currentState.Username = $localSource.user
+        $currentState.Username = $localSource.username
         $currentState.Password = $localSource.password
 
         if (-not [string]::isNullOrEmpty($this.Source) -and $currentState.Source -ne $this.Source)
@@ -320,7 +320,6 @@ class ChocolateySource : ChocolateyBase
                 if (-not [string]::IsNullOrEmpty($this.Username))
                 {
                     $registerChocolateySourceParams['KeyUser'] = $this.Username
-                    throw 'NotImplementedYet'
                 }
 
                 if (-not [string]::isNullOrEmpty($this.Password))
