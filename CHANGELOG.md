@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixing issue #105 where Uninstall-ChocolateySoftware fails.
 - Making version parameter of `Update-ChocolateyPackage` not mandatory.
+- Fixing issue #107 to allow for username field to be set on ChocolateySource
 
 ## [0.10.4] - 2025-12-05
 
