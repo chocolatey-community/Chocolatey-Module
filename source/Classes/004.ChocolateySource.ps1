@@ -42,6 +42,15 @@
 
     .PARAMETER Credential
         Credential used with authenticated feeds. Defaults to empty.
+        Cannot be used together with Username/Password.
+
+    .PARAMETER Username
+        Username used with authenticated feeds. Must be used together with
+        Password. Cannot be used together with Credential.
+
+    .PARAMETER Password
+        Password used with authenticated feeds. Must be used together with
+        Username. Cannot be used together with Credential.
 
     .EXAMPLE
         Invoke-DscResource -ModuleName Chocolatey -Name ChocolateySource -Method Get -Property @{
@@ -95,6 +104,27 @@ class ChocolateySource : ChocolateyBase
     {
         $currentState = [ChocolateySource]::New()
         $currentState.Name = $this.Name
+
+        if (-not [string]::IsNullOrEmpty($this.Credential) -and (-not [string]::IsNullOrEmpty($this.Username) -or -not [string]::IsNullOrEmpty($this.Password)))
+        {
+            $currentState.Reasons += @{
+                code = 'ChocolateySource:ChocolateySource:CredentialParameterConflict'
+                phrase = 'You cannot specify both Credential and Username/Password. Use either a PSCredential object or explicit Username and Password parameters, not both.'
+            }
+
+            return $currentState
+        }
+
+        if ((-not [string]::IsNullOrEmpty($this.Username)) -xor (-not [string]::IsNullOrEmpty($this.Password)))
+        {
+            $currentState.Reasons += @{
+                code = 'ChocolateySource:ChocolateySource:IncompleteCredentialParameters'
+                phrase = 'Username and Password must be specified together. Please provide both or neither.'
+            }
+
+            return $currentState
+        }
+
         if (-not (Test-ChocolateyInstall))
         {
             Write-Debug -Message 'Chocolatey is not installed.'
@@ -279,6 +309,11 @@ class ChocolateySource : ChocolateyBase
         {
             Write-Debug -Message 'Chocolatey is not installed.'
             throw $currentState.Reasons.Where{$_.Code -match 'ChocolateyNotInstalled'}.phrase
+        }
+
+        if ($currentState.Reasons.code.Where{$_ -match 'CredentialParameterConflict$|IncompleteCredentialParameters$'})
+        {
+            throw $currentState.Reasons.Where{$_.Code -match 'CredentialParameterConflict$|IncompleteCredentialParameters$'}.phrase
         }
 
         switch -Regex ($currentState.Reasons.Code)
