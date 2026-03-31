@@ -250,7 +250,8 @@ function Install-ChocolateySoftware
         [Environment]::SetEnvironmentVariable('ChocolateyInstall', $InstallationDirectory, 'Machine')
     }
 
-    & $chocInstallPS1 | Foreach-Object -Process {
+    #TODO: Capture output and log to file? *>&1
+    $null = & $chocInstallPS1 | Foreach-Object -Process {
         Write-Verbose -Message ('{0}' -f $_)
     }
 
@@ -293,6 +294,6 @@ function Install-ChocolateySoftware
 
     if ($ChocoVersion = & "$chocoPath\choco.exe" @('-v'))
     {
-        Write-Verbose ('Installed Chocolatey Version: {0}'-f $ChocoVersion)
+        Write-Verbose -Message ('Installed Chocolatey Version: {0}'-f $ChocoVersion)
     }
 }
