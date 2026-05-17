@@ -5,6 +5,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add `DscResource.Authoring` module configuration and build task
+
 ### Fixed
 
 - Fixing issue #105 where Uninstall-ChocolateySoftware fails.
