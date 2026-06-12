@@ -1,17 +1,21 @@
 @{
-    PSDependOptions             = @{
-        AddToPath  = $true
-        Target     = 'output\RequiredModules'
-        Parameters = @{
-           Repository = 'PSGallery'
-        }
-    }
+    <#
+        This is only required if you need to use the method PowerShellGet & PSDepend.
+        It is not required for PSResourceGet or ModuleFast (and will be ignored).
+        See Resolve-Dependency.psd1 on how to enable methods.
+    #>
+    #PSDependOptions             = @{
+    #    AddToPath  = $true
+    #    Target     = 'output\RequiredModules'
+    #    Parameters = @{
+    #        Repository = 'PSGallery'
+    #    }
+    #}
 
     InvokeBuild                 = 'latest'
     PSScriptAnalyzer            = 'latest'
     Pester                      = 'latest'
     Plaster                     = 'latest'
-    'powershell-yaml'           = 'latest'
     ModuleBuilder               = 'latest'
     ChangelogManagement         = 'latest'
     Sampler                     = @{
@@ -30,6 +34,7 @@
     xDscResourceDesigner        = 'latest'
     'DscResource.DocGenerator'  = 'latest'
     platyPS                     = 'latest'
+    'Microsoft.PowerShell.PSResourceGet' = 'latest'
 
     'GuestConfiguration'        = @{
         version = 'latest'

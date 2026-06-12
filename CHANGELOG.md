@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Split Copilot guidance into targeted instruction files and added a local
   `validate-changes` skill plus class-export/type-accelerator guidance for
   `source\suffix.ps1`.
+- Updated the bootstrap scripts and dependency configuration to the newer
+  Sampler pattern with PSResourceGet support while keeping repo-specific
+  compatibility.
 
 ### Fixed
 
