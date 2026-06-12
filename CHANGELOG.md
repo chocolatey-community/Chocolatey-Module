@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated the bootstrap scripts and dependency configuration to the newer
   Sampler pattern with PSResourceGet support while keeping repo-specific
   compatibility.
+- Changed the bootstrap defaults to prefer ModuleFast on PowerShell 7.2+
+  while retaining PSResourceGet as the fallback on older PowerShell hosts.
 
 ### Fixed
 

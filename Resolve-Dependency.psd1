@@ -19,7 +19,7 @@
         PSResourceGet if enabled) will be used as the default method of resolving
         dependencies.
     #>
-    # UseModuleFast = $true
+    UseModuleFast = $true
     #ModuleFastVersion = '0.1.2'
     #ModuleFastBleedingEdge = $true
 

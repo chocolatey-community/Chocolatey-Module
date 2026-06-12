@@ -17,6 +17,7 @@
     Pester                      = 'latest'
     Plaster                     = 'latest'
     ModuleBuilder               = 'latest'
+    Configuration               = 'latest'
     ChangelogManagement         = 'latest'
     Sampler                     = @{
         version = 'latest'
