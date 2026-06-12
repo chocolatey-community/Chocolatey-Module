@@ -25,43 +25,102 @@ function Get-ChocolateyInstallPath
     # Update path from registry if not set in process
     Repair-ProcessEnvPath
 
-    # Get ChocolateyInstall path from HKLM
-    $chocolateyInstall = [System.Environment]::GetEnvironmentVariable('ChocolateyInstall', 'Machine')
+    $resolveChocolateyInstallPath = {
+        param
+        (
+            [Parameter()]
+            [System.String]
+            $Path
+        )
+
+        if ([string]::IsNullOrEmpty($Path))
+        {
+            return $null
+        }
+
+        try
+        {
+            $resolvedPath = (Resolve-Path -Path $Path -ErrorAction 'Stop').Path
+        }
+        catch
+        {
+            return $null
+        }
+
+        $rootChocoExe = Join-Path -Path $resolvedPath -ChildPath 'choco.exe'
+        $binChocoExe = Join-Path -Path $resolvedPath -ChildPath 'bin\choco.exe'
+
+        if ((Test-Path -Path $rootChocoExe) -or (Test-Path -Path $binChocoExe))
+        {
+            return $resolvedPath
+        }
+
+        return $null
+    }
+
+    $processChocolateyInstall = [System.Environment]::GetEnvironmentVariable('ChocolateyInstall', 'Process')
+    $machineChocolateyInstall = [System.Environment]::GetEnvironmentVariable('ChocolateyInstall', 'Machine')
+    $chocolateyInstall = & $resolveChocolateyInstallPath $processChocolateyInstall
+
+    if (-not [string]::IsNullOrEmpty($chocolateyInstall))
+    {
+        Write-Debug -Message ('ChocolateyInstall path Process environment variable already set to ''{0}''.' -f $chocolateyInstall)
+        return $chocolateyInstall
+    }
+
+    $chocolateyInstall = & $resolveChocolateyInstallPath $machineChocolateyInstall
+
+    if (-not [string]::IsNullOrEmpty($chocolateyInstall))
+    {
+        Write-Debug -Message ('ChocolateyInstall path Machine environment variable already set to ''{0}''.' -f $chocolateyInstall)
+        return $chocolateyInstall
+    }
 
     # Test if current user is admin
     # $isAdmin = Assert-ChocolateyIsElevated
     $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
-    # Guess Chocolatey install executable path
-    $chocoInstallFolder = Join-Path -Path $env:ProgramData -ChildPath 'chocolatey'
-    $chocoExe = Join-Path -Path $chocoInstallFolder -ChildPath 'choco.exe'
-
-    $chocoCmd = Get-ChocolateyCommand -InstallDir $chocoInstallFolder -ErrorAction SilentlyContinue -Force
-    if ($chocoCmd.path -eq $chocoExe)
+    $chocoCmd = Get-ChocolateyCommand -ErrorAction 'Ignore' -Force
+    if ($null -ne $chocoCmd -and -not [string]::IsNullOrEmpty($chocoCmd.Path))
     {
-        Write-Debug -Message ('choco.exe found at {0}.' -f $chocoExe)
+        $chocoBin = Split-Path -Path $chocoCmd.Path -Parent -ErrorAction 'Ignore'
+        if (-not [string]::IsNullOrEmpty($chocoBin))
+        {
+            if ((Split-Path -Path $chocoBin -Leaf -ErrorAction 'Ignore') -ieq 'bin')
+            {
+                $chocolateyInstall = Split-Path -Path $chocoBin -Parent -ErrorAction 'Ignore'
+            }
+            else
+            {
+                $chocolateyInstall = $chocoBin
+            }
+
+            $chocolateyInstall = & $resolveChocolateyInstallPath $chocolateyInstall
+            if (-not [string]::IsNullOrEmpty($chocolateyInstall))
+            {
+                Write-Debug -Message ('Resolved Chocolatey install path from command discovery to ''{0}''.' -f $chocolateyInstall)
+                return $chocolateyInstall
+            }
+        }
     }
 
-    # todo: elseif ()
+    # Guess Chocolatey install path from the standard location.
+    $chocoInstallFolder = Join-Path -Path $env:ProgramData -ChildPath 'chocolatey'
+    # take the standard Chocolatey location, validate that it really looks like a Chocolatey install, and only keep it if it is valid.
+    $chocolateyInstall = & $resolveChocolateyInstallPath $chocoInstallFolder
 
-    if ([string]::IsNullOrEmpty($chocolateyInstall) -and (Test-Path -Path $chocolateyInstall))
+    if (-not [string]::IsNullOrEmpty($chocolateyInstall))
     {
-        # Choco install is set to the correct location
-        $chocolateyInstall = $chocoInstallFolder
-        # only if you're admin, fix the ChocolateyInstall folder
+        Write-Debug -Message ('Resolved Chocolatey install path from standard location ''{0}''.' -f $chocolateyInstall)
+
+        # Only if you're admin, fix the ChocolateyInstall folder when it was missing.
         if ($true -eq $isAdmin)
         {
             [Environment]::SetEnvironmentVariable('ChocolateyInstall', $chocolateyInstall, 'Machine')
         }
-    }
-    elseif (-not [string]::IsNullOrEmpty($chocolateyInstall))
-    {
-        Write-Debug -Message ('ChocolateyInstall path Machine environment variable already set to ''{0}''.' -f $chocolateyInstall)
-    }
-    else
-    {
-        Write-Error -Message 'The chocolatey install Machine environment variable couldn''t be found.'
+
+        return $chocolateyInstall
     }
 
-    return $chocolateyInstall
+    Write-Error -Message 'The chocolatey install Machine environment variable couldn''t be found.'
 }
