@@ -14,7 +14,7 @@ on:
 jobs:
   copilot-setup-steps:
     name: Setup PowerShell Development Environment
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     permissions:
       contents: read
@@ -98,14 +98,17 @@ jobs:
               throw 'Build failed.'
           }
 
-          $builtModulePath = Join-Path -Path $PWD -ChildPath 'output\module\Chocolatey'
+          $builtModulePath = Join-Path -Path $PWD -ChildPath 'output\module\chocolatey'
+          $builtModuleManifest = Get-ChildItem -Path $builtModulePath -Filter 'chocolatey.psd1' -Recurse -File |
+              Sort-Object -Property FullName |
+              Select-Object -First 1
 
-          if (-not (Test-Path -Path $builtModulePath))
+          if (-not $builtModuleManifest)
           {
-              throw "Expected built module path '$builtModulePath' was not created."
+              throw "Expected built module manifest under '$builtModulePath' was not created."
           }
 
-          Write-Host "Built module is available at '$builtModulePath'."
+          Write-Host "Built module manifest is available at '$($builtModuleManifest.FullName)'."
           Write-Host "Build log written to '$buildLogPath'."
 
       - name: Import built module
@@ -114,8 +117,18 @@ jobs:
           Write-Host 'Importing Chocolatey module from the built artifact...'
 
           ./build.ps1 -Tasks 'noop'
-          Import-Module -Name 'Chocolatey' -Force -ErrorAction Stop
+          $builtModulePath = Join-Path -Path $PWD -ChildPath 'output\module\chocolatey'
+          $builtModuleManifest = Get-ChildItem -Path $builtModulePath -Filter 'chocolatey.psd1' -Recurse -File |
+              Sort-Object -Property FullName |
+              Select-Object -First 1
 
-          $module = Get-Module -Name 'Chocolatey' -ErrorAction Stop
+          if (-not $builtModuleManifest)
+          {
+              throw "Expected built module manifest under '$builtModulePath' was not created."
+          }
+
+          Import-Module -Name $builtModuleManifest.FullName -Force -ErrorAction Stop
+
+          $module = Get-Module -Name 'chocolatey' -ErrorAction Stop
 
           Write-Host "Imported module '$($module.Name)' version '$($module.Version)' from '$($module.Path)'."

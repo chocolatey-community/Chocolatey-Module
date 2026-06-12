@@ -20,6 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   compatibility.
 - Changed the bootstrap defaults to prefer ModuleFast on PowerShell 7.2+
   while retaining PSResourceGet as the fallback on older PowerShell hosts.
+- Updated the Copilot setup workflow to resolve the built module artifact
+  dynamically and run on Windows so the built module can be imported during
+  environment validation.
 
 ### Fixed
 
