@@ -1,0 +1,134 @@
+name: 'Copilot Setup Steps'
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/copilot-setup-steps.yml'
+      - '.github/copilot-instructions.md'
+  push:
+    paths:
+      - '.github/workflows/copilot-setup-steps.yml'
+      - '.github/copilot-instructions.md'
+
+jobs:
+  copilot-setup-steps:
+    name: Setup PowerShell Development Environment
+    runs-on: windows-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Ensure full history for GitVersion
+        shell: pwsh
+        run: |
+          Write-Host 'Ensuring full history for GitVersion...'
+
+          $isShallow = (& git rev-parse --is-shallow-repository) -eq 'true'
+
+          if ($isShallow)
+          {
+              Write-Host 'Repository is shallow. Fetching full history and tags...'
+
+              git fetch --prune --unshallow --tags --no-recurse-submodules
+
+              if ($LASTEXITCODE -ne 0)
+              {
+                  throw 'git fetch --unshallow failed'
+              }
+          }
+          else
+          {
+              Write-Host 'Repository is not shallow. Refreshing tags...'
+
+              git fetch --prune --tags --no-recurse-submodules
+
+              if ($LASTEXITCODE -ne 0)
+              {
+                  throw 'git fetch --tags failed'
+              }
+          }
+
+          Write-Host 'History ready for GitVersion.'
+
+      - name: Install .NET tools
+        shell: pwsh
+        run: |
+          Write-Host 'Installing/Updating .NET tools...'
+
+          dotnet tool update --global GitVersion.Tool --version 5.* `
+            || dotnet tool install --global GitVersion.Tool --version 5.*
+
+          dotnet-gitversion /version
+
+          Write-Host '.NET tools ready.'
+
+      - name: Resolve project dependencies
+        shell: pwsh
+        run: |
+          Write-Host 'Resolving project dependencies into output/RequiredModules...'
+
+          ./build.ps1 -ResolveDependency -Tasks 'noop' -ErrorAction Stop
+
+          Write-Host 'Dependencies resolved successfully.'
+
+      - name: Build module artifact
+        shell: pwsh
+        run: |
+          Write-Host 'Building Chocolatey module...'
+
+          $buildLogPath = Join-Path -Path $env:RUNNER_TEMP -ChildPath 'copilot-build.log'
+
+          if (Test-Path -Path $buildLogPath)
+          {
+              Remove-Item -Path $buildLogPath -Force
+          }
+
+          ./build.ps1 -Tasks 'build' 2>&1 |
+              Tee-Object -FilePath $buildLogPath
+
+          if ($LASTEXITCODE -ne 0)
+          {
+              throw 'Build failed.'
+          }
+
+          $builtModulePath = Join-Path -Path $PWD -ChildPath 'output\module\chocolatey'
+          $builtModuleManifest = Get-ChildItem -Path $builtModulePath -Filter 'chocolatey.psd1' -Recurse -File |
+              Sort-Object -Property FullName |
+              Select-Object -First 1
+
+          if (-not $builtModuleManifest)
+          {
+              throw "Expected built module manifest under '$builtModulePath' was not created."
+          }
+
+          Write-Host "Built module manifest is available at '$($builtModuleManifest.FullName)'."
+          Write-Host "Build log written to '$buildLogPath'."
+
+      - name: Import built module
+        shell: pwsh
+        run: |
+          Write-Host 'Importing Chocolatey module from the built artifact...'
+
+          ./build.ps1 -Tasks 'noop'
+          $builtModulePath = Join-Path -Path $PWD -ChildPath 'output\module\chocolatey'
+          $builtModuleManifest = Get-ChildItem -Path $builtModulePath -Filter 'chocolatey.psd1' -Recurse -File |
+              Sort-Object -Property FullName |
+              Select-Object -First 1
+
+          if (-not $builtModuleManifest)
+          {
+              throw "Expected built module manifest under '$builtModulePath' was not created."
+          }
+
+          Import-Module -Name $builtModuleManifest.FullName -Force -ErrorAction Stop
+
+          $module = Get-Module -Name 'chocolatey' -ErrorAction Stop
+
+          Write-Host "Imported module '$($module.Name)' version '$($module.Version)' from '$($module.Path)'."

@@ -5,8 +5,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Added repository Copilot setup and instructions covering cloud-agent bootstrap,
+  `build.ps1` validation patterns, Public/Private test coupling, and PowerShell
+  coding conventions.
+- Clarified in Copilot instructions that the module is Windows-only while still
+  requiring compatibility with Windows PowerShell 5.1 and PowerShell 7.
+- Split Copilot guidance into targeted instruction files and added a local
+  `validate-changes` skill plus class-export/type-accelerator guidance for
+  `source\suffix.ps1`.
+- Updated the bootstrap scripts and dependency configuration to the newer
+  Sampler pattern with PSResourceGet support while keeping repo-specific
+  compatibility.
+- Changed the bootstrap defaults to prefer ModuleFast on PowerShell 7.2+
+  while retaining PSResourceGet as the fallback on older PowerShell hosts.
+- Updated the Copilot setup workflow to resolve the built module artifact
+  dynamically and run on Windows so the built module can be imported during
+  environment validation.
+
 ### Fixed
 
+- Fixed `Get-ChocolateyInstallPath` to honor a valid non-standard
+  `ChocolateyInstall` path before falling back to the default install location.
 - Fixing issue #105 where Uninstall-ChocolateySoftware fails.
 - Making version parameter of `Update-ChocolateyPackage` not mandatory.
 - Fixing issue #107 to allow for username field to be set on ChocolateySource
