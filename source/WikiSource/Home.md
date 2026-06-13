@@ -10,6 +10,7 @@ The **Chocolatey Module** provides PowerShell commands and DSC resources for ins
 - [Manage Chocolatey settings](ChocolateySetting)
 - [Manage Chocolatey features](ChocolateyFeature)
 - [Install a Chocolatey license](Install-ChocolateyLicense)
+- [Licensed Chocolatey guidance](LicensedChocolatey)
 
 ## Migration
 
@@ -18,6 +19,8 @@ The **Chocolatey Module** provides PowerShell commands and DSC resources for ins
 ## Command reference
 
 - [Install-ChocolateySoftware](Install-ChocolateySoftware)
+- [Install-ChocolateyLicense](Install-ChocolateyLicense)
+- [Remove-ChocolateyLicense](Remove-ChocolateyLicense)
 - [Install-ChocolateyPackage](Install-ChocolateyPackage)
 - [Update-ChocolateyPackage](Update-ChocolateyPackage)
 - [Uninstall-ChocolateyPackage](Uninstall-ChocolateyPackage)

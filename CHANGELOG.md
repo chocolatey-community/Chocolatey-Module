@@ -23,15 +23,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated the Copilot setup workflow to resolve the built module artifact
   dynamically and run on Windows so the built module can be imported during
   environment validation.
-- Hardened Chocolatey delimited output parsing so licensed-extension warnings
-  are ignored instead of being treated as installed packages.
-- Added `Install-ChocolateyLicense` to install a Chocolatey license file from a
-  source path or XML content.
+- Hardened Chocolatey delimited output parsing so licensed-extension
+  compatibility output is surfaced as warnings or errors and is no longer
+  treated as installed package data.
+- Added `Install-ChocolateyLicense` to install or overwrite a Chocolatey
+  license file from a source path or XML content.
 - Added `Remove-ChocolateyLicense` to remove the Chocolatey license file and
   revert to unlicensed Chocolatey behavior.
 - Aligned wiki generation with the explicit Sampler docs workflow so content
   from `source\WikiSource` is prepared and published to the GitHub wiki.
 - Added a `Home.md` wiki landing page under `source\WikiSource`.
+- Added a `LicensedChocolatey.md` wiki page covering license install, removal,
+  and the licensed-extension compatibility warning.
 
 ### Fixed
 
