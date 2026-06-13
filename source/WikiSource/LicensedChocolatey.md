@@ -2,8 +2,8 @@
 
 This module now includes public commands to install and remove a Chocolatey license file:
 
-- [`Install-ChocolateyLicense`](Install-ChocolateyLicense)
-- [`Remove-ChocolateyLicense`](Remove-ChocolateyLicense)
+- `Install-ChocolateyLicense`
+- `Remove-ChocolateyLicense`
 
 ## Installing a license
 
