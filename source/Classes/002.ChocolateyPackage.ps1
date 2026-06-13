@@ -391,7 +391,7 @@ class ChocolateyPackage : ChocolateyBase
                 Write-Error -Message ('Unsupported error occurred while processing {0}.' -f $DesiredState.Name)
             }
 
-            Default
+            default
             {
                 # Unsupported Code Path
                 Write-Error -Message ('Unsupported code path encountered while processing {0}.' -f $DesiredState.Name)

@@ -4,37 +4,41 @@ The **Chocolatey Module** provides PowerShell commands and DSC resources for ins
 
 ## Start here
 
-- [Install Chocolatey CLI](ChocolateySoftware)
-- [Manage packages](ChocolateyPackage)
-- [Manage package sources](ChocolateySource)
-- [Manage Chocolatey settings](ChocolateySetting)
-- [Manage Chocolatey features](ChocolateyFeature)
-- [Install a Chocolatey license](Install-ChocolateyLicense)
-- [Licensed Chocolatey guidance](LicensedChocolatey)
+- Install Chocolatey CLI with the `ChocolateySoftware` DSC resource.
+- Manage packages with the `ChocolateyPackage` DSC resource.
+- Manage package sources with the `ChocolateySource` DSC resource.
+- Manage Chocolatey settings with the `ChocolateySetting` DSC resource.
+- Manage Chocolatey features with the `ChocolateyFeature` DSC resource.
+- Install a Chocolatey license with the `Install-ChocolateyLicense` command.
+- [Licensed Chocolatey guidance](LicensedChocolatey.md)
 
 ## Migration
 
-- [cChoco migration guide](cChocoMigrationWiki)
+- [cChoco migration guide](cChocoMigrationWiki.md)
 
 ## Command reference
 
-- [Install-ChocolateySoftware](Install-ChocolateySoftware)
-- [Install-ChocolateyLicense](Install-ChocolateyLicense)
-- [Remove-ChocolateyLicense](Remove-ChocolateyLicense)
-- [Install-ChocolateyPackage](Install-ChocolateyPackage)
-- [Update-ChocolateyPackage](Update-ChocolateyPackage)
-- [Uninstall-ChocolateyPackage](Uninstall-ChocolateyPackage)
-- [Register-ChocolateySource](Register-ChocolateySource)
-- [Set-ChocolateySetting](Set-ChocolateySetting)
-- [Enable-ChocolateyFeature](Enable-ChocolateyFeature)
+Generated command pages in the published wiki include:
+
+- `Install-ChocolateySoftware`
+- `Install-ChocolateyLicense`
+- `Remove-ChocolateyLicense`
+- `Install-ChocolateyPackage`
+- `Update-ChocolateyPackage`
+- `Uninstall-ChocolateyPackage`
+- `Register-ChocolateySource`
+- `Set-ChocolateySetting`
+- `Enable-ChocolateyFeature`
 
 ## DSC resources
 
-- [ChocolateySoftware](ChocolateySoftware)
-- [ChocolateyPackage](ChocolateyPackage)
-- [ChocolateySource](ChocolateySource)
-- [ChocolateySetting](ChocolateySetting)
-- [ChocolateyFeature](ChocolateyFeature)
+Generated DSC resource pages in the published wiki include:
+
+- `ChocolateySoftware`
+- `ChocolateyPackage`
+- `ChocolateySource`
+- `ChocolateySetting`
+- `ChocolateyFeature`
 
 ## Notes
 
