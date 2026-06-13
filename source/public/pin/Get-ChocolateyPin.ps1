@@ -58,7 +58,7 @@ function Get-ChocolateyPin
         {
             Write-Verbose ("Found {0} Packages" -f $chocoPinListOutput.count)
             # Convert the list to objects
-            $chocoPinListOutput = $chocoPinListOutput | ConvertFrom-Csv -Delimiter '|' -Header 'Name', 'Version'
+            $chocoPinListOutput = $chocoPinListOutput | ConvertFrom-ChocolateyDelimitedOutput
         }
 
         if ($Name -ne '*')
