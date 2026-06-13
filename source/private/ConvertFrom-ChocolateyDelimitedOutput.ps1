@@ -14,6 +14,12 @@
 
 .PARAMETER Header
     Property names to assign to the parsed output.
+
+.EXAMPLE
+    choco list chocolatey --limit-output | ConvertFrom-ChocolateyDelimitedOutput
+
+    Parses Chocolatey delimited output into objects while ignoring warning and
+    noise lines that do not match the expected output shape.
 #>
 function ConvertFrom-ChocolateyDelimitedOutput
 {
