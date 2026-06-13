@@ -1,6 +1,7 @@
 BeforeAll {
     $script:moduleName = 'Chocolatey'
     $script:repoRoot = (Resolve-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath '..\..\..')).Path
+
     $script:builtManifest = Get-ChildItem -Path (Join-Path -Path $script:repoRoot -ChildPath 'output\module\chocolatey') -Filter 'chocolatey.psd1' -Recurse -ErrorAction 'SilentlyContinue' |
         Sort-Object -Property FullName -Descending |
         Select-Object -First 1 -ExpandProperty FullName
@@ -21,8 +22,8 @@ BeforeAll {
     $PSDefaultParameterValues['Should:ModuleName'] = $script:moduleName
 }
 
-Describe Get-ChocolateyPackage {
-    Context 'When choco list returns compatibility warnings before package output' {
+Describe ChocolateyPackage {
+    Context 'When licensed compatibility warnings are emitted before an exact package query' {
         BeforeAll {
             function global:Invoke-FakeChoco {
                 param (
@@ -33,11 +34,15 @@ Describe Get-ChocolateyPackage {
 
                 @(
                     'A valid Chocolatey license was found, but the chocolatey.licensed.dll assembly could not be loaded:'
+                    '  Unable to load licensed assembly.'
                     'Ensure that the chocolatey.licensed.dll exists at the following path:'
-                    'chocolatey.extension|7.0.0'
+                    ' ''C:\ProgramData\chocolatey\extensions\chocolatey\chocolatey.licensed.dll'''
+                    'To resolve this, install the Chocolatey Licensed Extension package with'
+                    ' `choco install chocolatey.extension`'
                 )
             }
 
+            Mock Test-ChocolateyInstall -MockWith { $true }
             Mock Get-ChocolateyCommand -MockWith { 'Invoke-FakeChoco' }
             Mock Get-ChocolateyDefaultArgument -MockWith { @('--limit-output', '--exact') }
         }
@@ -46,12 +51,18 @@ Describe Get-ChocolateyPackage {
             Remove-Item -Path Function:\Invoke-FakeChoco -ErrorAction 'SilentlyContinue'
         }
 
-        It 'Should return only the valid package entry' {
-            $result = @(Get-ChocolateyPackage -Name 'chocolatey.extension' -Exact)
+        It 'Should treat the package as absent instead of throwing' {
+            $desiredState = [ChocolateyPackage]::new()
+            $desiredState.Name = 'chocolatey.extension'
+            $desiredState.Version = '7.0.0'
+            $desiredState.Source = 'Chocolatey-Source'
+            $desiredState.Ensure = 'Present'
 
-            $result.Count | Should -Be 1
-            $result[0].Name | Should -Be 'chocolatey.extension'
-            $result[0].Version | Should -Be '7.0.0'
+            $result = [ChocolateyPackage]::Get($desiredState)
+
+            $result.Ensure | Should -Be 'Absent'
+            $result.Version | Should -BeNullOrEmpty
+            $result.Reasons.Code | Should -Contain 'ChocolateyPackage:ChocolateyPackage:ShouldBeInstalled'
         }
     }
 }

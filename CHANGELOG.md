@@ -26,6 +26,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Hardened Chocolatey delimited output parsing so licensed-extension
   compatibility output is surfaced as warnings or errors and is no longer
   treated as installed package data.
+- Added regression coverage for the `ChocolateyPackage` DSC/class `Get()`
+  path so licensed-extension compatibility warnings still resolve to an
+  absent package state instead of breaking package discovery.
 - Added `Install-ChocolateyLicense` to install or overwrite a Chocolatey
   license file from a source path or XML content.
 - Added `Remove-ChocolateyLicense` to remove the Chocolatey license file and
