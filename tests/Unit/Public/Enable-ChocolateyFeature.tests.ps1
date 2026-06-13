@@ -19,25 +19,25 @@ BeforeAll {
 Describe Enable-ChocolateyFeature {
     Context 'Default' {
         BeforeAll {
-            Mock Get-Command -MockWith { Get-Command Write-Output } -ParameterFilter {$Name -eq 'choco.exe'}
+            Mock Get-ChocolateyCommand -MockWith { 'Write-Output' }
             Mock Get-ChocolateyFeature -MockWith {
                 'MyChocoFeature'
             }
             Mock Get-ChocolateyDefaultArgument -MockWith { 'TestArgument' }
         }
 
-        It 'Should call Get-Command' {
-            $null = Enable-ChocolateyFeature -Name 'TestFeature'
-            {Assert-MockCalled Get-Command} | Should -not -Throw
+        It 'Should call Get-ChocolateyCommand' {
+            $null = Enable-ChocolateyFeature -Name 'TestFeature' -RunNonElevated
+            {Assert-MockCalled Get-ChocolateyCommand} | Should -not -Throw
         }
 
         It 'Should call Get-ChocolateyFeature' {
-            $null = Enable-ChocolateyFeature -Name 'TestFeature'
+            $null = Enable-ChocolateyFeature -Name 'TestFeature' -RunNonElevated
             {Assert-MockCalled Get-ChocolateyFeature} | Should -not -Throw
         }
 
         It 'Should not return value' {
-            $return = Enable-ChocolateyFeature -Name 'TestFeature'
+            $return = Enable-ChocolateyFeature -Name 'TestFeature' -RunNonElevated
             $return | Should -BeNullOrEmpty
         }
     }

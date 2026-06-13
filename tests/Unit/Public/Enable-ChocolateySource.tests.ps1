@@ -19,25 +19,25 @@ BeforeAll {
 Describe Enable-ChocolateySource {
     Context 'Default' {
         BeforeAll {
-            Mock Get-Command -MockWith { Get-Command Write-Output } -ParameterFilter {$Name -eq 'choco.exe'}
+            Mock Get-ChocolateyCommand -MockWith { 'Write-Output' }
             Mock Get-ChocolateySource -MockWith {
                 'MyChocoSource'
             }
             Mock Get-ChocolateyDefaultArgument -MockWith { 'TestArgument' }
         }
 
-        It 'Should call Get-Command' {
-            $null = Enable-ChocolateySource -Name 'TestSource'
-            {Assert-MockCalled Get-Command} | Should -Not -Throw
+        It 'Should call Get-ChocolateyCommand' {
+            $null = Enable-ChocolateySource -Name 'TestSource' -RunNonElevated
+            {Assert-MockCalled Get-ChocolateyCommand} | Should -Not -Throw
         }
 
         It 'Should call Get-ChocolateySource' {
-            $null = Enable-ChocolateySource -Name 'TestSource'
+            $null = Enable-ChocolateySource -Name 'TestSource' -RunNonElevated
             {Assert-MockCalled Get-ChocolateySource} | Should -Not -Throw
         }
 
         It 'Should not return value' {
-            $return = Enable-ChocolateySource -Name 'TestSource'
+            $return = Enable-ChocolateySource -Name 'TestSource' -RunNonElevated
             $return | Should -BeNullOrEmpty
         }
     }

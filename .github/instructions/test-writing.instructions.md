@@ -46,6 +46,8 @@ BeforeAll {
 - When validating class or type-accelerator behavior, import the module before invoking code paths that reference exported accelerators.
 - Use PowerShell-version or platform guards only when the behavior truly differs between Windows PowerShell 5.1 and PowerShell 7.
 - This repository is Windows-only, but tests must still work on both supported PowerShell versions.
+- For commands that mutate system state and use the hidden `RunNonElevated` parameter defaulted from `Assert-ChocolateyIsElevated`, unit tests should normally pass `-RunNonElevated` unless the elevation check itself is the subject of the test.
+- Mock the command-discovery helper that the implementation actually uses. In this repository that is usually `Get-ChocolateyCommand`, not `Get-Command`.
 
 ## Validation commands
 

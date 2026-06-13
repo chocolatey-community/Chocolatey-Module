@@ -7,7 +7,7 @@ applyTo: 'source/private/**/*.ps1'
 
 ## Baseline structure
 
-- Follow the same comment-based help baseline as public functions.
+- Follow the same comment-based help baseline as public functions, including at least one `.EXAMPLE`.
 - Use `[CmdletBinding()]`.
 - Include `[OutputType(...)]` when output shape is stable and meaningful to document.
 - Use explicit parameter types where the helper contract is stable.
@@ -23,6 +23,7 @@ applyTo: 'source/private/**/*.ps1'
 
 - Add or update matching tests under `tests/Unit/Private/<FunctionName>.tests.ps1`.
 - Cover happy path and validation or failure behavior.
+- Keep help examples current when adding or changing private helpers; repository QA checks fail when a function has no `.EXAMPLE`.
 - Prefer focused validation first:
 
 ```powershell

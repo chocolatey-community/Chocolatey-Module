@@ -29,6 +29,8 @@ applyTo: 'source/public/**/*.ps1'
 
 - Add or update matching tests under `tests/Unit/Public/<FunctionName>.tests.ps1`.
 - Cover happy path and validation or failure behavior.
+- If the command uses the hidden `RunNonElevated` guard pattern (`$RunNonElevated = $(Assert-ChocolateyIsElevated)`), update tests to either pass `-RunNonElevated` or explicitly mock the elevation check so unit tests exercise the intended behavior instead of failing at parameter binding time.
+- When command resolution behavior is under test, mock `Get-ChocolateyCommand` rather than older `Get-Command -Name 'choco.exe'` call paths unless the implementation still uses `Get-Command` directly.
 - Prefer focused validation first:
 
 ```powershell
