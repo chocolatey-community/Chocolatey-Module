@@ -400,7 +400,7 @@ function Save-ChocolateyPackage
         {
             $chocoArguments.Add('-y')
             Write-Debug -Message ('{0} {1}' -f $chocoCmd, ($chocoArguments -join ' '))
-            &$chocoCmd $chocoArguments | ForEach-Object -Process {
+            &$chocoCmd @chocoArguments | ForEach-Object -Process {
                 Write-Verbose -Message ('{0}' -f $_)
             }
         }
