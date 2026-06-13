@@ -14,6 +14,7 @@
 - This module is Windows-only.
 - This module must support Windows PowerShell 5.1 and PowerShell 7.
 - The built module is imported as `Chocolatey`.
+- Custom GitHub wiki content lives under `source/WikiSource` and is published through the Sampler/DscResource.DocGenerator wiki tasks.
 - Add an `Unreleased` changelog entry in `CHANGELOG.md` for behavior or workflow changes.
 
 ## Instruction files

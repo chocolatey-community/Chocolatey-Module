@@ -22,3 +22,5 @@ modules/*
 .kitchen/*
 .kitchen.local.yml
 **/bin
+
+chocolatey.license.*

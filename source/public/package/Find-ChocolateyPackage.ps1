@@ -133,6 +133,6 @@ function Find-ChocolateyPackage
         $chocoArguments += Get-ChocolateyDefaultArgument @PSBoundParameters
 
         Write-Debug -Message ('{0} {1}' -f $chocoCmd.Path, $($chocoArguments -join ' '))
-        (&$chocoCmd $chocoArguments | ConvertFrom-Csv -Delimiter '|' -Header 'Name', 'Version')
+        (&$chocoCmd $chocoArguments | ConvertFrom-ChocolateyDelimitedOutput)
     }
 }
