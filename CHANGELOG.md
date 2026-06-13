@@ -33,6 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   license file from a source path or XML content.
 - Added `Remove-ChocolateyLicense` to remove the Chocolatey license file and
   revert to unlicensed Chocolatey behavior.
+- Added `Save-ChocolateyPackage` to wrap `choco download`, including licensed
+  download, virus-scan, and internalization switches.
 - Aligned wiki generation with the explicit Sampler docs workflow so content
   from `source\WikiSource` is prepared and published to the GitHub wiki.
 - Added a `Home.md` wiki landing page under `source\WikiSource`.
@@ -43,6 +45,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed `Get-ChocolateyInstallPath` to honor a valid non-standard
   `ChocolateyInstall` path before falling back to the default install location.
+- `Save-ChocolateyPackage` now throws when licensed-only download parameters are
+  used without an installed Chocolatey license file.
 - Fixing issue #105 where Uninstall-ChocolateySoftware fails.
 - Making version parameter of `Update-ChocolateyPackage` not mandatory.
 - Fixing issue #107 to allow for username field to be set on ChocolateySource

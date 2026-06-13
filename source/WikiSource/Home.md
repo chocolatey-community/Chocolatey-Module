@@ -23,6 +23,7 @@ Generated command pages in the published wiki include:
 - `Install-ChocolateySoftware`
 - `Install-ChocolateyLicense`
 - `Remove-ChocolateyLicense`
+- `Save-ChocolateyPackage`
 - `Install-ChocolateyPackage`
 - `Update-ChocolateyPackage`
 - `Uninstall-ChocolateyPackage`

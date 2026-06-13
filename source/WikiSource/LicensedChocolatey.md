@@ -4,6 +4,7 @@ This module now includes public commands to install and remove a Chocolatey lice
 
 - `Install-ChocolateyLicense`
 - `Remove-ChocolateyLicense`
+- `Save-ChocolateyPackage`
 
 ## Installing a license
 
@@ -59,6 +60,19 @@ You should still install the licensed extension promptly after installing the li
 ```powershell
 Install-ChocolateyPackage -Name 'chocolatey.extension'
 ```
+
+## Downloading or internalizing packages
+
+With the licensed extension installed, you can save packages locally and use
+internalization features through:
+
+```powershell
+Save-ChocolateyPackage -Name 'notepadplusplus.install' -Internalize
+```
+
+If you use licensed-only `Save-ChocolateyPackage` parameters such as
+`-Internalize`, `-UseDownloadCache`, or `-SkipVirusCheck` without first
+installing a Chocolatey license, the command throws before invoking Chocolatey.
 
 ## Recommended sequence
 
