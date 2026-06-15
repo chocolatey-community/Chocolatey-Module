@@ -23,19 +23,19 @@ Describe Disable-ChocolateySource {
                 'MyChocoSource'
             }
             Mock Get-ChocolateyDefaultArgument -MockWith { 'TestArgument' }
-            Mock Get-Command -MockWith { Get-Command Write-Output } -ParameterFilter {$Name -eq 'choco.exe'}
+            Mock Get-ChocolateyCommand -MockWith { 'Write-Output' }
         }
 
-        It 'Should call Get-Command' {
-            $null = Disable-ChocolateySource -Name 'TestSource'
-            {Assert-MockCalled Get-Command} | Should -not -Throw
+        It 'Should call Get-ChocolateyCommand' {
+            $null = Disable-ChocolateySource -Name 'TestSource' -RunNonElevated
+            {Assert-MockCalled Get-ChocolateyCommand} | Should -not -Throw
         }
         It 'Should Call Get-ChocolateySource' {
-            $null = Disable-ChocolateySource -Name 'TestSource'
+            $null = Disable-ChocolateySource -Name 'TestSource' -RunNonElevated
             {Assert-MockCalled Get-ChocolateySource} | Should -not -Throw
         }
         It 'Should not return value' {
-            $return = Disable-ChocolateySource -Name 'TestSource'
+            $return = Disable-ChocolateySource -Name 'TestSource' -RunNonElevated
             $return | Should -BeNullOrEmpty
         }
     }

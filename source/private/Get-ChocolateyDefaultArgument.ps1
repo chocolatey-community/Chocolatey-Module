@@ -47,11 +47,23 @@ Credential to authenticate to the source feed.
 .PARAMETER ProxyCredential
 Credential for the Proxy.
 
+.PARAMETER ProxyLocation
+Explicit proxy location for Chocolatey commands.
+
+.PARAMETER ProxyBypassList
+Regular-expression list of locations that should bypass the proxy.
+
+.PARAMETER ProxyBypassOnLocal
+Bypass the proxy for local connections.
+
 .PARAMETER Force
 Force the action being targeted.
 
 .PARAMETER CacheLocation
 Location where the download will be cached.
+
+.PARAMETER OutputDirectory
+Directory where downloaded package files should be saved.
 
 .PARAMETER InstallArguments
 Arguments to pass to the Installer (Not Package args)
@@ -99,6 +111,12 @@ Should install arguments be used exclusively without appending to current packag
     switch is not recommended if using sources that download resources from
     the internet. Overrides the default feature 'allowEmptyChecksums' set to
     'False'. Available in 0.10.0+.
+
+.PARAMETER AllowEmptyChecksumSecure
+    Allow empty checksums for downloaded resources from secure locations (HTTPS).
+
+.PARAMETER RequireChecksum
+    Require checksums for downloaded resources.
 
 .PARAMETER ignorePackageCodes
     IgnorePackageExitCodes - Exit with a 0 for success and 1 for non-success,
@@ -148,6 +166,9 @@ Should install arguments be used exclusively without appending to current packag
     is VirusTotal. Overrides the default configuration value
     'virusCheckMinimumPositives' set to '5'. Available in 0.9.10+. Licensed
     editions only. See https://chocolatey.org/docs/features-virus-check
+
+.PARAMETER MaxDownloadRate
+Maximum download rate in bits per second.
 
 .PARAMETER OrderByPopularity
     Order the community packages (chocolatey.org) by popularity.
@@ -236,6 +257,51 @@ Should install arguments be used exclusively without appending to current packag
 
 .PARAMETER IncludeConfiguredSources
     IncludeConfiguredSources - When searching, include all sources from
+
+.PARAMETER InstalledPackages
+    Download all installed Chocolatey packages.
+
+.PARAMETER IgnoreUnfound
+    Continue downloading remaining packages when one package cannot be found.
+
+.PARAMETER DisablePackageRepositoryOptimizations
+    Disable Chocolatey's package repository query optimizations.
+
+.PARAMETER IgnoreDependenciesFromSource
+    Ignore dependencies that are already present on the named configured source.
+
+.PARAMETER Internalize
+    Internalize a package by downloading remote resources and recompiling it.
+
+.PARAMETER ResourcesLocation
+    Resources location to use when internalizing a package.
+
+.PARAMETER DownloadLocation
+    Local download location to use when internalizing resources.
+
+.PARAMETER InternalizeAllUrls
+    Internalize all discovered URLs during package internalization.
+
+.PARAMETER AppendUseOriginalLocation
+    Append `-UseOriginalLocation` to internalized helper calls.
+
+.PARAMETER ForceSelfService
+    Force handling through Chocolatey self-service when available.
+
+.PARAMETER AllowUnofficialBuild
+    Allow Chocolatey to run when using an unofficial build.
+
+.PARAMETER FailOnStandardError
+    Fail if the command writes to the standard error stream.
+
+.PARAMETER UseSystemPowerShell
+    Run PowerShell in an external process instead of the embedded host.
+
+.PARAMETER SkipCompatibilityChecks
+    Skip Chocolatey and licensed extension compatibility warnings.
+
+.PARAMETER IgnoreHttpCache
+    Ignore cached HTTP responses when querying sources.
 
 .PARAMETER WhatIf
     Simulates the command that would be run by adding.
@@ -547,12 +613,28 @@ function Get-ChocolateyDefaultArgument
         $ProxyCredential,
 
         [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [string]
+        $ProxyLocation,
+
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [string[]]
+        $ProxyBypassList,
+
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [switch]
+        $ProxyBypassOnLocal,
+
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
         [Switch]
         $Force,
 
         [Parameter(ValueFromPipelineByPropertyName = $true)]
         [System.String]
         $CacheLocation,
+
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [string]
+        $OutputDirectory,
 
         [Parameter(ValueFromPipelineByPropertyName = $true)]
         [String]
@@ -608,6 +690,14 @@ function Get-ChocolateyDefaultArgument
 
         [Parameter(ValueFromPipelineByPropertyName = $true)]
         [Switch]
+        $AllowEmptyChecksumSecure,
+
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [Switch]
+        $RequireChecksum,
+
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [Switch]
         $ignorePackageCodes,
 
         [Parameter(ValueFromPipelineByPropertyName = $true)]
@@ -639,6 +729,11 @@ function Get-ChocolateyDefaultArgument
         [ValidateNotNullOrEmpty()]
         [int]
         $VirusPositive,
+
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [ValidateNotNullOrEmpty()]
+        [int]
+        $MaxDownloadRate,
 
         [Parameter(ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
@@ -734,6 +829,66 @@ function Get-ChocolateyDefaultArgument
         [Parameter()]
         [switch]
         $IncludeConfiguredSources,
+
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [switch]
+        $InstalledPackages,
+
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [switch]
+        $IgnoreUnfound,
+
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [switch]
+        $DisablePackageRepositoryOptimizations,
+
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [string]
+        $IgnoreDependenciesFromSource,
+
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [switch]
+        $Internalize,
+
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [string]
+        $ResourcesLocation,
+
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [string]
+        $DownloadLocation,
+
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [switch]
+        $InternalizeAllUrls,
+
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [switch]
+        $AppendUseOriginalLocation,
+
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [switch]
+        $ForceSelfService,
+
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [switch]
+        $AllowUnofficialBuild,
+
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [switch]
+        $FailOnStandardError,
+
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [switch]
+        $UseSystemPowerShell,
+
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [switch]
+        $SkipCompatibilityChecks,
+
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [switch]
+        $IgnoreHttpCache,
 
         [Parameter(ValueFromPipelineByPropertyName = $true)]
         [Switch]
@@ -843,13 +998,25 @@ function Get-ChocolateyDefaultArgument
             {
                 "--allow-unofficial-build"
             }
+            'AllowUnofficialBuild'
+            {
+                "--allow-unofficial-build"
+            }
             'FailOnSTDErr'
+            {
+                '--fail-on-stderr'
+            }
+            'FailOnStandardError'
             {
                 '--fail-on-stderr'
             }
             'Proxy'
             {
-                "--Proxy=`"$Proxy`""
+                "--proxy=`"$Proxy`""
+            }
+            'ProxyLocation'
+            {
+                "--proxy=`"$ProxyLocation`""
             }
             'ProxyCredential'
             {
@@ -869,6 +1036,22 @@ function Get-ChocolateyDefaultArgument
             'ProxyBypassLocal'
             {
                 "--proxy-bypass-on-local"
+            }
+            'ProxyBypassOnLocal'
+            {
+                "--proxy-bypass-on-local"
+            }
+            'UseSystemPowerShell'
+            {
+                '--use-system-powershell'
+            }
+            'SkipCompatibilityChecks'
+            {
+                '--skip-compatibility-checks'
+            }
+            'IgnoreHttpCache'
+            {
+                '--ignore-http-cache'
             }
 
             #List / Search Parameters
@@ -919,6 +1102,10 @@ function Get-ChocolateyDefaultArgument
             'Version'
             {
                 "--version=`"$version`""
+            }
+            'OutputDirectory'
+            {
+                "--output-directory=`"$OutputDirectory`""
             }
             'exact'
             {
@@ -974,6 +1161,46 @@ function Get-ChocolateyDefaultArgument
             'RequireChecksum'
             {
                 '--requirechecksum'
+            }
+            'InstalledPackages'
+            {
+                '--installed-packages'
+            }
+            'IgnoreUnfound'
+            {
+                '--ignore-unfound-packages'
+            }
+            'DisablePackageRepositoryOptimizations'
+            {
+                '--disable-package-repository-optimizations'
+            }
+            'IgnoreDependenciesFromSource'
+            {
+                "--ignore-dependencies-from-source=`"$IgnoreDependenciesFromSource`""
+            }
+            'Internalize'
+            {
+                '--internalize'
+            }
+            'ResourcesLocation'
+            {
+                "--resources-location=`"$ResourcesLocation`""
+            }
+            'DownloadLocation'
+            {
+                "--download-location=`"$DownloadLocation`""
+            }
+            'InternalizeAllUrls'
+            {
+                '--internalize-all-urls'
+            }
+            'AppendUseOriginalLocation'
+            {
+                '--append-use-original-location'
+            }
+            'ForceSelfService'
+            {
+                '--force-self-service'
             }
             'Checksum'
             {

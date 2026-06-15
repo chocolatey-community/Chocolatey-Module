@@ -100,7 +100,7 @@ function Get-ChocolateyPackage
             # bypass caching when requested, or when not searching for an exact match
             # (when not doing exact match choco is looking through description)
             Write-Debug -Message ('{0} {1}' -f $chocoCmd, $($ChocoArguments -join ' '))
-            &$chocoCmd $chocoArguments | ConvertFrom-Csv -Delimiter '|' -Header 'Name', 'Version'
+            &$chocoCmd $chocoArguments | ConvertFrom-ChocolateyDelimitedOutput
         }
         else
         {
@@ -130,7 +130,7 @@ function Get-ChocolateyPackage
                 }
                 else
                 {
-                    ConvertFrom-Csv -Delimiter '|' -Header 'Name', 'Version' -InputObject $outputString
+                    ConvertFrom-ChocolateyDelimitedOutput -InputObject $outputString
                 }
             }
         }

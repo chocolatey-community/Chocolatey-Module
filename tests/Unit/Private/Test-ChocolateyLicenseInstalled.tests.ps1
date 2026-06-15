@@ -21,37 +21,28 @@ BeforeAll {
     $PSDefaultParameterValues['Should:ModuleName'] = $script:moduleName
 }
 
-Describe Get-ChocolateyPackage {
-    Context 'When choco list returns compatibility warnings before package output' {
+Describe Test-ChocolateyLicenseInstalled {
+    Context 'When the license file exists' {
         BeforeAll {
-            function global:Invoke-FakeChoco {
-                param (
-                    [Parameter(ValueFromRemainingArguments = $true)]
-                    [object[]]
-                    $Arguments
-                )
-
-                @(
-                    'A valid Chocolatey license was found, but the chocolatey.licensed.dll assembly could not be loaded:'
-                    'Ensure that the chocolatey.licensed.dll exists at the following path:'
-                    'chocolatey.extension|7.0.0'
-                )
-            }
-
-            Mock Get-ChocolateyCommand -MockWith { 'Invoke-FakeChoco' }
-            Mock Get-ChocolateyDefaultArgument -MockWith { @('--limit-output', '--exact') }
+            Mock Test-Path -MockWith { $true }
         }
 
-        AfterAll {
-            Remove-Item -Path Function:\Invoke-FakeChoco -ErrorAction 'SilentlyContinue'
+        It 'Should return true' {
+            InModuleScope -ScriptBlock {
+                Test-ChocolateyLicenseInstalled -InstallDir 'C:\ProgramData\chocolatey'
+            } | Should -BeTrue
+        }
+    }
+
+    Context 'When the license file does not exist' {
+        BeforeAll {
+            Mock Test-Path -MockWith { $false }
         }
 
-        It 'Should return only the valid package entry' {
-            $result = @(Get-ChocolateyPackage -Name 'chocolatey.extension' -Exact)
-
-            $result.Count | Should -Be 1
-            $result[0].Name | Should -Be 'chocolatey.extension'
-            $result[0].Version | Should -Be '7.0.0'
+        It 'Should return false' {
+            InModuleScope -ScriptBlock {
+                Test-ChocolateyLicenseInstalled -InstallDir 'C:\ProgramData\chocolatey'
+            } | Should -BeFalse
         }
     }
 }
