@@ -86,3 +86,5 @@ $MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = {
 }.GetNewClosure()
 
 #endregion
+
+Register-ChocolateyArgumentCompleter

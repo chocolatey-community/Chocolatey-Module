@@ -35,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   revert to unlicensed Chocolatey behavior.
 - Added `Save-ChocolateyPackage` to wrap `choco download`, including licensed
   download, virus-scan, and internalization switches.
+- Added PowerShell argument completer registrations for local Chocolatey package, pin, source,
+  feature, and setting names across the module's wrapper commands.
 - Aligned wiki generation with the explicit Sampler docs workflow so content
   from `source\WikiSource` is prepared and published to the GitHub wiki.
 - Added a `Home.md` wiki landing page under `source\WikiSource`.
