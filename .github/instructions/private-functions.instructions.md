@@ -9,6 +9,8 @@ applyTo: 'source/private/**/*.ps1'
 
 - Follow the same comment-based help baseline as public functions, including at least one `.EXAMPLE`.
 - Use `[CmdletBinding()]`.
+- Put `[Parameter()]` on every parameter, even when no explicit metadata is needed.
+- Format each parameter with the attribute, type, and variable name on separate lines, with a blank line between comma-separated parameter declarations.
 - Include `[OutputType(...)]` when output shape is stable and meaningful to document.
 - Use explicit parameter types where the helper contract is stable.
 
