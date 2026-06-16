@@ -5,6 +5,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added `Publish-ChocolateyPackage` public function wrapping `choco push` to publish `.nupkg` files to a Chocolatey-compatible feed, with support for `Source`, `ApiKey`, and standard common options.
+
 ### Changed
 
 - Added repository Copilot setup and instructions covering cloud-agent bootstrap,
