@@ -49,23 +49,23 @@ Describe Register-ChocolateyArgumentCompleter {
         It 'Should register the expected command and parameter combinations' {
             $script:registrations.Count | Should -Be 7
 
-            ($script:registrations | Where-Object -FilterScript {
+            @($script:registrations | Where-Object -FilterScript {
                 $_.ParameterName -eq 'Name' -and $_.CommandName -contains 'Update-ChocolateyPackage'
             }).Count | Should -Be 1
 
-            ($script:registrations | Where-Object -FilterScript {
+            @($script:registrations | Where-Object -FilterScript {
                 $_.ParameterName -eq 'Name' -and $_.CommandName -contains 'Remove-ChocolateyPin'
             }).Count | Should -Be 1
 
-            ($script:registrations | Where-Object -FilterScript {
+            @($script:registrations | Where-Object -FilterScript {
                 $_.ParameterName -eq 'Name' -and $_.CommandName -contains 'Unregister-ChocolateySource'
             }).Count | Should -Be 1
 
-            ($script:registrations | Where-Object -FilterScript {
+            @($script:registrations | Where-Object -FilterScript {
                 $_.ParameterName -eq 'Feature' -and $_.CommandName -contains 'Get-ChocolateyFeature'
             }).Count | Should -Be 1
 
-            ($script:registrations | Where-Object -FilterScript {
+            @($script:registrations | Where-Object -FilterScript {
                 $_.ParameterName -eq 'Setting' -and $_.CommandName -contains 'Get-ChocolateySetting'
             }).Count | Should -Be 1
         }
