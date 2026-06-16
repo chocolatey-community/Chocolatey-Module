@@ -21,19 +21,65 @@ deployed to [PowerShell Gallery](https://www.powershellgallery.com/).
 Periodically a release version tag will be pushed which will deploy a
 full release to [PowerShell Gallery](https://www.powershellgallery.com/).
 
+## Command coverage
+
+The table below tracks which `choco` CLI commands have a PowerShell wrapper.
+Update this table whenever a new public function is added or removed.
+
+| `choco` command | PowerShell wrapper | Edition |
+|---|---|---|
+| `list` / `search` | `Get-ChocolateyPackage` | OSS |
+| `find` | `Find-ChocolateyPackage` | OSS |
+| `info` | — | OSS |
+| `install` | `Install-ChocolateyPackage` | OSS |
+| `upgrade` | `Update-ChocolateyPackage` | OSS |
+| `uninstall` | `Uninstall-ChocolateyPackage` | OSS |
+| `outdated` | — | OSS |
+| `pin add/remove/list` | `Add-`, `Remove-`, `Get-ChocolateyPin` | OSS |
+| `pack` | — | OSS |
+| `push` | `Publish-ChocolateyPackage` | OSS |
+| `new` | — | OSS |
+| `export` | — | OSS |
+| `download` | `Save-ChocolateyPackage` | Licensed |
+| `source add/remove/list/enable/disable` | `Register-`, `Unregister-`, `Get-`, `Enable-`, `Disable-ChocolateySource` | OSS |
+| `config get/set/list` | `Get-`, `Set-ChocolateySetting` | OSS |
+| `config unset` | — | OSS |
+| `feature enable/disable/list` | `Enable-`, `Disable-`, `Get-ChocolateyFeature` | OSS |
+| `apikey add/remove/list` | — | OSS |
+| `template list/info` | — | OSS |
+| `cache` | — | OSS |
+| `sync` | `Sync-ChocolateyPackage` | C4B |
+| `optimize` | `Optimize-ChocolateyPackage` | Licensed |
+| `convert` | `Convert-ChocolateyPackage` | C4B |
+
+**Not yet implemented (open for contribution):**
+
+- `Get-ChocolateyPackageInfo` — wraps `choco info`; returns detailed metadata for a package from a source
+- `Get-ChocolateyOutdatedPackage` — wraps `choco outdated`; lists installed packages that have newer versions available
+- `New-ChocolateyPackage` — wraps `choco pack`; creates a `.nupkg` from a `.nuspec`
+- `New-ChocolateyPackageScaffold` — wraps `choco new`; scaffolds a new package directory from a template
+- `Export-ChocolateyPackage` — wraps `choco export`; exports installed packages to a `packages.config`
+- `Set-ChocolateyApiKey` / `Get-ChocolateyApiKey` / `Remove-ChocolateyApiKey` — wraps `choco apikey`
+- `Remove-ChocolateySetting` — wraps `choco config unset`
+- `Get-ChocolateyPackageTemplate` / `Install-ChocolateyPackageTemplate` / `Uninstall-ChocolateyPackageTemplate` — wraps `choco template`
+- `Clear-ChocolateyCache` — wraps `choco cache`
+
 ## PowerShell argument completers
 
 Importing the module registers PowerShell argument completers for common
 Chocolatey wrapper commands.
 
-- Package name completion for `Get-ChocolateyPackage`,
-  `Uninstall-ChocolateyPackage`, `Update-ChocolateyPackage`, and
-  `Add-ChocolateyPin`
+- Package name completion (installed packages) for `Get-ChocolateyPackage`,
+  `Uninstall-ChocolateyPackage`, `Update-ChocolateyPackage`,
+  `Compare-ChocolateyPackage`, `Optimize-ChocolateyPackage`, and `Add-ChocolateyPin`
 - Pin name completion for `Get-ChocolateyPin`, `Remove-ChocolateyPin`, and
   `Test-ChocolateyPin`
 - Source name completion for `Get-ChocolateySource`, `Test-ChocolateySource`,
-  `Enable-ChocolateySource`, `Disable-ChocolateySource`, and
-  `Unregister-ChocolateySource`
+  `Enable-ChocolateySource`, `Disable-ChocolateySource`,
+  `Unregister-ChocolateySource`, `Install-ChocolateyPackage`,
+  `Update-ChocolateyPackage`, `Uninstall-ChocolateyPackage`,
+  `Save-ChocolateyPackage`, `Find-ChocolateyPackage`,
+  `Compare-ChocolateyPackage`, and `Publish-ChocolateyPackage`
 - Feature name completion for `Get-ChocolateyFeature`,
   `Test-ChocolateyFeature`, `Enable-ChocolateyFeature`, and
   `Disable-ChocolateyFeature`
