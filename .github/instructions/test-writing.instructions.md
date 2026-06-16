@@ -47,6 +47,7 @@ BeforeAll {
 - Use PowerShell-version or platform guards only when the behavior truly differs between Windows PowerShell 5.1 and PowerShell 7.
 - This repository is Windows-only, but tests must still work on both supported PowerShell versions.
 - For commands that mutate system state and use the hidden `RunNonElevated` parameter defaulted from `Assert-ChocolateyIsElevated`, unit tests should normally pass `-RunNonElevated` unless the elevation check itself is the subject of the test.
+- For commands that use `SupportsShouldProcess`, pass `-Confirm:$false` in unit tests that are meant to exercise the execution path. Do not rely on `ConfirmImpact` being low enough to skip the prompt — `$ConfirmPreference` may vary across environments and PowerShell versions, and non-interactive mode throws when a prompt would be shown.
 - Mock the command-discovery helper that the implementation actually uses. In this repository that is usually `Get-ChocolateyCommand`, not `Get-Command`.
 
 ## Windows PowerShell 5.1 compatibility
