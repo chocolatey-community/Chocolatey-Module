@@ -48,7 +48,9 @@ Describe Sync-ChocolateyPackage {
                 )
 
                 $script:capturedArguments = $Arguments
-                'synced'
+                'Package Id|Display Name|Version|New Package'
+                'globalprotect|GlobalProtect|6.2.8|True'
+                'putty|Putty|0.76|False'
             }
 
             Mock Get-ChocolateyCommand -MockWith { 'Invoke-FakeChoco' }
@@ -64,10 +66,16 @@ Describe Sync-ChocolateyPackage {
             Remove-Item -Path Function:\Invoke-FakeChoco -ErrorAction 'SilentlyContinue'
         }
 
-        It 'Should not return a value' {
-            $result = Sync-ChocolateyPackage -RunNonElevated -Confirm:$false
+        It 'Should return parsed sync results as objects' {
+            $result = @(Sync-ChocolateyPackage -RunNonElevated -Confirm:$false)
 
-            $result | Should -BeNullOrEmpty
+            $result.Count | Should -Be 2
+            $result[0].PackageId   | Should -Be 'globalprotect'
+            $result[0].DisplayName | Should -Be 'GlobalProtect'
+            $result[0].Version     | Should -Be '6.2.8'
+            $result[0].NewPackage  | Should -BeTrue
+            $result[1].PackageId   | Should -Be 'putty'
+            $result[1].NewPackage  | Should -BeFalse
         }
 
         It 'Should pass sync as the first choco argument' {

@@ -65,7 +65,7 @@ foreach ($typeToExport in  @($typesToExportWithNamespace + $typesToExportAsIs))
                 'Accelerator already exists.'
             ) -join ' - '
 
-            Write-Warning -Message $Message
+            Write-Debug -Message $Message
         }
         else
         {

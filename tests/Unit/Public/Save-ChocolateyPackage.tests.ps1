@@ -56,6 +56,48 @@ Describe Save-ChocolateyPackage {
 
             $return | Should -BeNullOrEmpty
         }
+
+        It 'Should throw when choco output contains not downloaded' {
+            function global:Invoke-FakeChocoFail {
+                param (
+                    [Parameter(ValueFromRemainingArguments = $true)]
+                    [object[]]
+                    $Arguments
+                )
+
+                'sysinternals - not downloaded'
+                '1 packages not downloaded.'
+            }
+
+            Mock Get-ChocolateyCommand -MockWith { 'Invoke-FakeChocoFail' }
+
+            {
+                Save-ChocolateyPackage -Name 'sysinternals'
+            } | Should -Throw '*not downloaded*'
+
+            Remove-Item -Path Function:\Invoke-FakeChocoFail -ErrorAction 'SilentlyContinue'
+        }
+
+        It 'Should write choco output to the verbose stream' {
+            function global:Invoke-FakeChocoVerbose {
+                param (
+                    [Parameter(ValueFromRemainingArguments = $true)]
+                    [object[]]
+                    $Arguments
+                )
+
+                'Saving sysinternals to C:\packages'
+                'sysinternals - saved'
+            }
+
+            Mock Get-ChocolateyCommand -MockWith { 'Invoke-FakeChocoVerbose' }
+
+            $verboseOutput = Save-ChocolateyPackage -Name 'sysinternals' -Verbose 4>&1
+
+            @($verboseOutput | Where-Object { $_ -match 'Saving sysinternals' }).Count | Should -Be 1
+
+            Remove-Item -Path Function:\Invoke-FakeChocoVerbose -ErrorAction 'SilentlyContinue'
+        }
     }
 
     Context 'When using licensed-only download parameters' {

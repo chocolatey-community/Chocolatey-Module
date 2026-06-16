@@ -7,6 +7,9 @@
     outside Chocolatey, generates Chocolatey packages for those programs, and
     baselines them against the Chocolatey package list.
 
+    Returns one `PSCustomObject` per synchronized entry with properties
+    `PackageId`, `DisplayName`, `Version`, and `NewPackage` (`[bool]`).
+
     This command requires Chocolatey for Business.
 
 .PARAMETER Id
@@ -89,7 +92,7 @@ function Sync-ChocolateyPackage
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '')]
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
-    [OutputType([void])]
+    [OutputType([PSCustomObject])]
     param
     (
         [Parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
@@ -212,8 +215,32 @@ function Sync-ChocolateyPackage
         {
             $chocoArguments.Add('-y')
             Write-Debug -Message ('{0} {1}' -f $chocoCmd, ($chocoArguments -join ' '))
-            &$chocoCmd @chocoArguments | ForEach-Object -Process {
-                Write-Verbose -Message ('{0}' -f $_)
+
+            $chocoOutput = &$chocoCmd @chocoArguments
+            $headers = $null
+
+            foreach ($line in $chocoOutput)
+            {
+                Write-Verbose -Message ('{0}' -f $line)
+
+                if ($line -notmatch '\|')
+                {
+                    continue
+                }
+
+                if ($null -eq $headers)
+                {
+                    $headers = $line -split '\|'
+                    continue
+                }
+
+                $values = $line -split '\|'
+                [PSCustomObject]@{
+                    PackageId   = $values[0]
+                    DisplayName = $values[1]
+                    Version     = $values[2]
+                    NewPackage  = $values[3] -eq 'True'
+                }
             }
         }
     }
