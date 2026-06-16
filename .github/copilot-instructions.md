@@ -14,6 +14,7 @@
 - This module is Windows-only.
 - This module must support Windows PowerShell 5.1 and PowerShell 7.
 - The built module is imported as `Chocolatey`.
+- In PowerShell code, prefer `$null = <expression>` over piping to `Out-Null`.
 - Custom GitHub wiki content lives under `source/WikiSource` and is published through the Sampler/DscResource.DocGenerator wiki tasks.
 - New or updated functions must keep comment-based help complete, including at least one `.EXAMPLE`, because `tests/QA/module.tests.ps1` enforces help examples for both public and private functions.
 - Add an `Unreleased` changelog entry in `CHANGELOG.md` for behavior or workflow changes.

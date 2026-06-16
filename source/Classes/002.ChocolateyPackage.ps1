@@ -55,21 +55,145 @@ class ChocolateyPackage : ChocolateyBase
     [DscProperty()] # WriteOnly
     [PSCredential] $Credential
 
-    [DscProperty(NotConfigurable)]
+    [DscProperty()]
     [bool] $UpdateOnly
 
     [DscProperty(NotConfigurable)]
     [ChocolateyReason[]] $Reasons
 
+    static [bool] IsCompliant([ChocolateyPackage] $CurrentState)
+    {
+        return ([ChocolateyPackage]::GetDifferingProperties($CurrentState).Count -eq 0) -and
+            (@($CurrentState.Reasons.Code).Where({ $_ -notmatch ':Compliant$' }).Count -eq 0)
+    }
+
+    static [string[]] GetDifferingProperties([ChocolateyPackage] $CurrentState)
+    {
+        $differingProperties = [System.Collections.Generic.List[string]]::new()
+
+        foreach ($reasonCode in @($CurrentState.Reasons.Code))
+        {
+            switch -Regex ($reasonCode)
+            {
+                'ShouldBeInstalled$|ShouldNotBeInstalled$'
+                {
+                    if ('Ensure' -notin $differingProperties)
+                    {
+                        $null = $differingProperties.Add('Ensure')
+                    }
+                }
+
+                'BelowExpectedVersion$|VersionShouldNotBeInstalled$|BelowUnapprovedVersion$'
+                {
+                    if ('Version' -notin $differingProperties)
+                    {
+                        $null = $differingProperties.Add('Version')
+                    }
+                }
+            }
+        }
+
+        return @($differingProperties)
+    }
+
+    static [string[]] GetChangedProperties([ChocolateyPackage] $CurrentState, [ChocolateyPackage] $AfterState)
+    {
+        $changedProperties = [System.Collections.Generic.List[string]]::new()
+
+        if ($CurrentState.Ensure -ne $AfterState.Ensure)
+        {
+            $null = $changedProperties.Add('Ensure')
+        }
+
+        if ($CurrentState.Version -ne $AfterState.Version)
+        {
+            $null = $changedProperties.Add('Version')
+        }
+
+        return @($changedProperties | Select-Object -Unique)
+    }
+
+    static [ChocolateyPackage] NewProjectedState(
+        [ChocolateyPackage] $CurrentState,
+        [ChocolateyPackage] $DesiredState,
+        [string] $CommandName
+    )
+    {
+        $projectedState = [ChocolateyPackage]::new()
+        $projectedState.Name = $DesiredState.Name
+        $projectedState.Source = $DesiredState.Source
+        $projectedState.UpdateOnly = $DesiredState.UpdateOnly
+
+        switch ($CommandName)
+        {
+            'Install-ChocolateyPackage'
+            {
+                $projectedState.Ensure = 'Present'
+                $projectedState.Version = if ([string]::IsNullOrEmpty($DesiredState.Version) -or $DesiredState.Version -eq 'latest')
+                {
+                    $CurrentState.Version
+                }
+                else
+                {
+                    $DesiredState.Version
+                }
+            }
+
+            'Update-ChocolateyPackage'
+            {
+                $projectedState.Ensure = 'Present'
+                $projectedState.Version = if ([string]::IsNullOrEmpty($DesiredState.Version) -or $DesiredState.Version -eq 'latest')
+                {
+                    $CurrentState.Version
+                }
+                else
+                {
+                    $DesiredState.Version
+                }
+            }
+
+            'Uninstall-ChocolateyPackage'
+            {
+                $projectedState.Ensure = 'Absent'
+                $projectedState.Version = $null
+            }
+
+            default
+            {
+                $projectedState.Ensure = $CurrentState.Ensure
+                $projectedState.Version = $CurrentState.Version
+            }
+        }
+
+        if ([string]::IsNullOrEmpty($projectedState.Version))
+        {
+            $projectedState._name = $projectedState.Name
+        }
+        else
+        {
+            $projectedState._name = '{0}_{1}' -f $projectedState.Name, $projectedState.Version
+        }
+
+        return $projectedState
+    }
+
+    static [string] InstanceJsonSchema()
+    {
+        return [ChocolateyBase]::GetInstanceJsonSchema([ChocolateyPackage])
+    }
+
     static [ChocolateyPackage] Get([ChocolateyPackage] $DesiredState)
     {
         $currentState = [ChocolateyPackage]::new()
         $currentState.Name = $DesiredState.Name
+        $currentState.Source = $DesiredState.Source
+        $currentState.UpdateOnly = $DesiredState.UpdateOnly
 
         if (-not (Test-ChocolateyInstall))
         {
             Write-Debug -Message 'Chocolatey is not installed.'
             $currentState.Ensure = 'Absent'
+            $currentState._name = $currentState.Name
 
             $currentState.Reasons += @{
                 code = 'ChocolateyPackage:ChocolateyPackage:ChocolateyNotInstalled'
@@ -106,14 +230,26 @@ class ChocolateyPackage : ChocolateyBase
         catch
         {
             Write-Verbose -Message ('Exception Caught:' -f $_)
+            $currentState.Ensure = 'Absent'
+            $currentState._name = $currentState.Name
             $currentState.Reasons += @{
                 code = 'ChocolateyPackage:ChocolateyPackage:ChocolateyError'
                 phrase = ('Error: {0}.' -f $_)
             }
+
+            return $currentState
         }
 
         $currentState.Version = $comparePackage.InstalledVersion
-        $DesiredState.Version = $comparePackage.ExpectedVersion
+
+        if ([string]::IsNullOrEmpty($currentState.Version))
+        {
+            $currentState._name = $currentState.Name
+        }
+        else
+        {
+            $currentState._name = '{0}_{1}' -f $currentState.Name, $currentState.Version
+        }
 
         if ($DesiredState.Ensure -eq 'Present')
         {
@@ -134,7 +270,7 @@ class ChocolateyPackage : ChocolateyBase
                     $currentState.Ensure = 'Present'
                     $currentState.Reasons += @{
                         Code   = ('ChocolateyPackage:ChocolateyPackage:Compliant')
-                        Phrase = ('The Package ''{0}'' is installed with version ''{1}'' higher or equal than the expected ''{2}''.' -f $currentState.Name, $currentState.Version, $DesiredState.Version)
+                        Phrase = ('The Package ''{0}'' is installed with version ''{1}'' higher or equal than the expected ''{2}''.' -f $currentState.Name, $currentState.Version, $comparePackage.ExpectedVersion)
                     }
                 }
 
@@ -143,7 +279,7 @@ class ChocolateyPackage : ChocolateyBase
                     $currentState.Ensure = 'Present'
                     $currentState.Reasons += @{
                         Code   = ('ChocolateyPackage:ChocolateyPackage:BelowExpectedVersion')
-                        Phrase = ('The Package ''{0}'' is installed with version ''{1}'' Lower than the expected ''{2}''.' -f $currentState.Name, $currentState.Version, $DesiredState.Version)
+                        Phrase = ('The Package ''{0}'' is installed with version ''{1}'' Lower than the expected ''{2}''.' -f $currentState.Name, $currentState.Version, $comparePackage.ExpectedVersion)
                     }
                 }
 
@@ -213,7 +349,7 @@ class ChocolateyPackage : ChocolateyBase
                         $currentState.Ensure = 'Present'
                         $currentState.Reasons += @{
                             Code   = ('ChocolateyPackage:ChocolateyPackage:VersionShouldNotBeInstalled')
-                            Phrase = ('The Package ''{0}'' is installed with version ''{1}'' which is the version expected absent: ''{2}''.' -f $currentState.Name, $currentState.Version, $DesiredState.Version)
+                            Phrase = ('The Package ''{0}'' is installed with version ''{1}'' which is the version expected absent: ''{2}''.' -f $currentState.Name, $currentState.Version, $comparePackage.ExpectedVersion)
                         }
                     }
                 }
@@ -235,7 +371,7 @@ class ChocolateyPackage : ChocolateyBase
                         $currentState.Ensure = 'Present'
                         $currentState.Reasons += @{
                             Code   = ('ChocolateyPackage:ChocolateyPackage:Compliant')
-                            Phrase = ('The Package ''{0}'' is installed with version ''{1}'' higher than the expected absent ''{2}''.' -f $currentState.Name, $currentState.Version, $DesiredState.Version)
+                            Phrase = ('The Package ''{0}'' is installed with version ''{1}'' higher than the expected absent ''{2}''.' -f $currentState.Name, $currentState.Version, $comparePackage.ExpectedVersion)
                         }
                     }
                 }
@@ -257,7 +393,7 @@ class ChocolateyPackage : ChocolateyBase
                         $currentState.Ensure = 'Present'
                         $currentState.Reasons += @{
                             Code   = ('ChocolateyPackage:ChocolateyPackage:BelowUnapprovedVersion')
-                            Phrase = ('The Package ''{0}'' is installed with version ''{1}'' Lower than the version expected absent: ''{2}''.' -f $currentState.Name, $currentState.Version, $DesiredState.Version)
+                            Phrase = ('The Package ''{0}'' is installed with version ''{1}'' Lower than the version expected absent: ''{2}''.' -f $currentState.Name, $currentState.Version, $comparePackage.ExpectedVersion)
                         }
                     }
                 }
@@ -281,53 +417,52 @@ class ChocolateyPackage : ChocolateyBase
         return [ChocolateyPackage]::Get($this)
     }
 
-    static [DscChocoTestResult] Test([ChocolateyPackage] $DesiredState)
+    static [System.Tuple[bool, ChocolateyPackage, string[]]] Test([ChocolateyPackage] $DesiredState)
     {
         $currentState = [ChocolateyPackage]::Get($DesiredState)
-        [DscChocoTestResult] $result = [DscChocoTestResult]::new()
-
-        if ($currentState.Reasons.Code.Where({$_ -notmatch ':Compliant$'}))
-        {
-            $result.Passed = $false
-        }
-        else
-        {
-            $result.Passed = $true
-        }
-
-        return $result
+        return [System.Tuple[bool, ChocolateyPackage, string[]]]::new(
+            [ChocolateyPackage]::IsCompliant($currentState),
+            $currentState,
+            [ChocolateyPackage]::GetDifferingProperties($currentState)
+        )
     }
 
     [bool] Test()
     {
-        return [ChocolateyPackage]::Test($this).Passed
+        return [ChocolateyPackage]::Test($this).Item1
     }
 
-    # static [bool] Validate([MyResource]$instance) {}
-    # static [hashtable] Schema() {}
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSDSCReturnCorrectTypesForDSCFunctions", "")]
-    static [DscChocoSetResult] Set([ChocolateyPackage] $DesiredState)
+    static [System.Tuple[ChocolateyPackage, string[]]] Set([ChocolateyPackage] $DesiredState)
+    {
+        return [ChocolateyPackage]::Set($DesiredState, $false)
+    }
+
+    static [System.Tuple[ChocolateyPackage, string[]]] Set([ChocolateyPackage] $DesiredState, [bool] $WhatIf)
     {
         $currentState = [ChocolateyPackage]::Get($DesiredState)
-        return ([ChocolateyPackage]::Set($currentState, $DesiredState, $false))
+        return [ChocolateyPackage]::InvokeSet($currentState, $DesiredState, $WhatIf)
     }
 
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSDSCReturnCorrectTypesForDSCFunctions", "")]
-    static [DscChocoSetResult] Set([ChocolateyPackage] $CurrentState, [ChocolateyPackage] $DesiredState)
+    static [System.Tuple[ChocolateyPackage, string[]]] InvokeSet(
+        [ChocolateyPackage] $CurrentState,
+        [ChocolateyPackage] $DesiredState,
+        [bool] $WhatIf
+    )
     {
-        return ([ChocolateyPackage]::Set($CurrentState, $DesiredState, $false))
-    }
-
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSDscReturnCorrectTypesForDSCFunctions", "")]
-    static [DscChocoSetResult] Set([ChocolateyPackage] $CurrentState, [ChocolateyPackage] $DesiredState, [bool] $WhatIf)
-    {
-        $result = [DscChocoSetResult]::new()
         $chocoCommand = $null
 
         if (-not (Test-ChocolateyInstall))
         {
             Write-Debug -Message 'Chocolatey is not installed.'
-            throw $currentState.Reasons.Where{$_.Code -match 'ChocolateyNotInstalled'}.phrase
+            throw $CurrentState.Reasons.Where{$_.Code -match 'ChocolateyNotInstalled'}.Phrase
+        }
+
+        if ([ChocolateyPackage]::IsCompliant($CurrentState))
+        {
+            return [System.Tuple[ChocolateyPackage, string[]]]::new(
+                $CurrentState,
+                @()
+            )
         }
 
         switch ($CurrentState.Reasons.code)
@@ -355,7 +490,7 @@ class ChocolateyPackage : ChocolateyBase
 
             'ChocolateyPackage:ChocolateyPackage:VersionShouldNotBeInstalled'
             {
-                if ($DesiredState.UpgradeOnly)
+                if ($DesiredState.UpdateOnly)
                 {
                     # Upgrade
                     Write-Debug -Message ('Upgrading {0}' -f $DesiredState.Name)
@@ -371,7 +506,7 @@ class ChocolateyPackage : ChocolateyBase
 
             'ChocolateyPackage:ChocolateyPackage:BelowUnapprovedVersion'
             {
-                if ($DesiredState.UpgradeOnly)
+                if ($DesiredState.UpdateOnly)
                 {
                     # Upgrade
                     Write-Debug -Message ('Upgrading {0}' -f $DesiredState.Name)
@@ -387,20 +522,23 @@ class ChocolateyPackage : ChocolateyBase
 
             'ChocolateyPackage:ChocolateyPackage:UnknownSideIndicator'
             {
-                # Unsupported error, surface message
-                Write-Error -Message ('Unsupported error occurred while processing {0}.' -f $DesiredState.Name)
+                throw ('Unsupported error occurred while processing {0}.' -f $DesiredState.Name)
             }
 
             default
             {
-                # Unsupported Code Path
-                Write-Error -Message ('Unsupported code path encountered while processing {0}.' -f $DesiredState.Name)
+                throw ('Unsupported code path encountered while processing {0}.' -f $DesiredState.Name)
             }
         }
 
+        if ($null -eq $chocoCommand)
+        {
+            throw ('Unable to resolve a Chocolatey command for package ''{0}''.' -f $DesiredState.Name)
+        }
+
         $chocoCommandParams = @{
-            Name    = $DesiredState.Name
-            confirm = $false
+            Name        = $DesiredState.Name
+            Confirm     = $false
             ErrorAction = 'Stop'
         }
 
@@ -414,49 +552,48 @@ class ChocolateyPackage : ChocolateyBase
             $chocoCommandParams['Source'] = $DesiredState.Source
         }
 
-        $DesiredState.ChocolateyOptions.keys.Where{$_ -notin $chocoCommandParams.Keys}.Foreach{
-            if ($chocoCommand.Parameters.Keys -contains $_)
-            {
-                if ($this.ChocolateyOptions[$_] -in @('True','False'))
+        if ($null -ne $DesiredState.ChocolateyOptions)
+        {
+            $DesiredState.ChocolateyOptions.Keys.Where({ $_ -notin $chocoCommandParams.Keys }).ForEach({
+                if ($chocoCommand.Parameters.Keys -contains $_)
                 {
-                    $chocoCommandParams[$_] = [bool]::Parse($this.ChocolateyOptions[$_])
+                    if ($DesiredState.ChocolateyOptions[$_] -in @('True', 'False'))
+                    {
+                        $chocoCommandParams[$_] = [bool]::Parse($DesiredState.ChocolateyOptions[$_])
+                    }
+                    else
+                    {
+                        $chocoCommandParams[$_] = $DesiredState.ChocolateyOptions[$_]
+                    }
                 }
                 else
                 {
-                    $chocoCommandParams[$_] = $this.ChocolateyOptions[$_]
+                    Write-Verbose -Message ('  Ignoring parameter ''{0}''. Not suported by ''{1}''.' -f $_, $chocoCommand.Name)
                 }
-            }
-            else
-            {
-                Write-Verbose -Message ('  Ignoring parameter ''{0}''. Not suported by ''{1}''.' -f $_, $chocoCommand.Name)
-            }
+            })
         }
 
-        try
+        if ($WhatIf)
         {
-            if ($null -ne $chocoCommand)
-            {
-                Write-verbose -Message ('---> Executing command {0} with param <{1}>' -f $chocoCommand.Name, ($chocoCommandParams | ConvertTo-Json -Depth 4))
-                $result.messages += &$chocoCommand @chocoCommandParams
-            }
-        }
-        catch
-        {
-            Write-Verbose -Message ('Exception Caught:' -f $_)
-            $result.messages += ('Error: {0}.' -f $_)
+            $afterState = [ChocolateyPackage]::NewProjectedState($CurrentState, $DesiredState, $chocoCommand.Name)
+            return [System.Tuple[ChocolateyPackage, string[]]]::new(
+                $afterState,
+                [ChocolateyPackage]::GetChangedProperties($CurrentState, $afterState)
+            )
         }
 
-        $result.After = [ChocolateyPackage]::Get($DesiredState)
-        #TODO: not a big fan of always having to call Get() to populate After state
-        # it's expensive after all.
+        $null = &$chocoCommand @chocoCommandParams
 
-        return $result
+        $afterState = [ChocolateyPackage]::Get($DesiredState)
+        return [System.Tuple[ChocolateyPackage, string[]]]::new(
+            $afterState,
+            [ChocolateyPackage]::GetChangedProperties($CurrentState, $afterState)
+        )
     }
 
     [void] Set()
     {
-        [ChocolateyPackage] $currentState = $this.Get()
-        $null = [ChocolateyPackage]::Set($currentState, $this, $false)
+        $null = [ChocolateyPackage]::Set($this, $false)
     }
 
     static [void] Delete([ChocolateyPackage] $DesiredState)
@@ -465,16 +602,47 @@ class ChocolateyPackage : ChocolateyBase
             Name = $DesiredState.Name
         }
 
-        if ($DesiredState.Version)
+        if (-not [string]::IsNullOrEmpty($DesiredState.Version))
         {
             $comparePackageParams['Version'] = $DesiredState.Version
         }
 
-        $ComparedPackage = Compare-ChocolateyPackage -Name $DesiredState.Name
-        if ($ComparedPackage.SideIndicator -ne '!')
+        if (-not [string]::IsNullOrEmpty($DesiredState.Source))
+        {
+            $comparePackageParams['Source'] = $DesiredState.Source
+        }
+
+        if ($null -ne $DesiredState.Credential)
+        {
+            $comparePackageParams['Credential'] = $DesiredState.Credential
+        }
+
+        $comparedPackage = Compare-ChocolateyPackage @comparePackageParams
+        if ($comparedPackage.SideIndicator -ne '!')
         {
             Write-Verbose -Message ('Removing package ''{0}''.' -f $DesiredState.Name)
-            Uninstall-ChocolateyPackage -Name $DesiredState.Name -Confirm:$false
+
+            $uninstallParams = @{
+                Name     = $DesiredState.Name
+                Confirm  = $false
+            }
+
+            if (-not [string]::IsNullOrEmpty($DesiredState.Version) -and $DesiredState.Version -ne 'latest')
+            {
+                $uninstallParams['Version'] = $DesiredState.Version
+            }
+
+            if (-not [string]::IsNullOrEmpty($DesiredState.Source))
+            {
+                $uninstallParams['Source'] = $DesiredState.Source
+            }
+
+            if ($null -ne $DesiredState.Credential)
+            {
+                $uninstallParams['Credential'] = $DesiredState.Credential
+            }
+
+            Uninstall-ChocolateyPackage @uninstallParams
         }
     }
 
@@ -497,9 +665,14 @@ class ChocolateyPackage : ChocolateyBase
         try
         {
             $allPackages = Get-ChocolateyPackage
-            [ChocolateyPackage[]]$result = $allPackages.Foreach{
-                Add-Member -InputObject $_ -MemberType NoteProperty -Name '_name' -Value ('{0}_{1}' -f $_.Name, $_.Version) -Force -PassThru
-            }
+            [ChocolateyPackage[]] $result = $allPackages.ForEach({
+                $package = [ChocolateyPackage]::new()
+                $package.Ensure = 'Present'
+                $package.Name = $_.Name
+                $package.Version = $_.Version
+                $package._name = '{0}_{1}' -f $_.Name, $_.Version
+                $package
+            })
 
             return $result
         }

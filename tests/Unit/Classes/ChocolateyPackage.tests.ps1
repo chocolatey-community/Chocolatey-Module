@@ -65,4 +65,156 @@ Describe ChocolateyPackage {
             $result.Reasons.Code | Should -Contain 'ChocolateyPackage:ChocolateyPackage:ShouldBeInstalled'
         }
     }
+
+    Context 'When evaluating DSCv3 static methods' {
+        BeforeEach {
+            Mock Test-ChocolateyInstall -MockWith { $true }
+        }
+
+        It 'Should return a tuple from Test with differing properties for version drift' {
+            Mock Compare-ChocolateyPackage -MockWith {
+                [PSCustomObject]@{
+                    InstalledVersion = '1.0.0'
+                    ExpectedVersion  = '2.0.0'
+                    SideIndicator    = '<'
+                }
+            }
+
+            $desiredState = [ChocolateyPackage]::new()
+            $desiredState.Name = 'git'
+            $desiredState.Version = '2.0.0'
+            $desiredState.Ensure = 'Present'
+
+            $result = [ChocolateyPackage]::Test($desiredState)
+
+            $result.Item1 | Should -BeFalse
+            $result.Item2.Version | Should -Be '1.0.0'
+            $result.Item3 | Should -Be @('Version')
+            $desiredState.Version | Should -Be '2.0.0'
+        }
+
+        It 'Should treat UpdateOnly as compliant when the package is absent' {
+            Mock Compare-ChocolateyPackage -MockWith {
+                [PSCustomObject]@{
+                    InstalledVersion = $null
+                    ExpectedVersion  = '2.0.0'
+                    SideIndicator    = '!'
+                }
+            }
+
+            $desiredState = [ChocolateyPackage]::new()
+            $desiredState.Name = 'git'
+            $desiredState.Version = '2.0.0'
+            $desiredState.Ensure = 'Present'
+            $desiredState.UpdateOnly = $true
+
+            $result = [ChocolateyPackage]::Test($desiredState)
+
+            $result.Item1 | Should -BeTrue
+            $result.Item3 | Should -BeNullOrEmpty
+        }
+
+        It 'Should return the final state and changed properties from Set' {
+            function global:Invoke-FakeUpdateChocolateyPackage {
+                [CmdletBinding()]
+                param (
+                    [Parameter()]
+                    [string]
+                    $Name,
+
+                    [Parameter()]
+                    [string]
+                    $Version,
+
+                    [Parameter()]
+                    [bool]
+                    $Force,
+
+                    [Parameter()]
+                    [switch]
+                    $Confirm
+                )
+
+                $script:capturedSetParameters = $PSBoundParameters
+                'updated'
+            }
+
+            $script:comparePackageCallCount = 0
+            Mock Compare-ChocolateyPackage -MockWith {
+                $script:comparePackageCallCount++
+
+                if ($script:comparePackageCallCount -eq 1)
+                {
+                    return [PSCustomObject]@{
+                        InstalledVersion = '1.0.0'
+                        ExpectedVersion  = '2.0.0'
+                        SideIndicator    = '<'
+                    }
+                }
+
+                return [PSCustomObject]@{
+                    InstalledVersion = '2.0.0'
+                    ExpectedVersion  = '2.0.0'
+                    SideIndicator    = '='
+                }
+            }
+
+            Mock Get-Command -MockWith { Get-Command -Name 'Invoke-FakeUpdateChocolateyPackage' } -ParameterFilter {
+                $Name -eq 'Update-ChocolateyPackage'
+            }
+
+            $desiredState = [ChocolateyPackage]::new()
+            $desiredState.Name = 'git'
+            $desiredState.Version = '2.0.0'
+            $desiredState.Ensure = 'Present'
+            $desiredState.ChocolateyOptions = @{
+                Force = 'True'
+            }
+
+            $result = [ChocolateyPackage]::Set($desiredState)
+
+            $result.Item1.Version | Should -Be '2.0.0'
+            $result.Item1.Ensure | Should -Be 'Present'
+            $result.Item2 | Should -Be @('Version')
+            $script:capturedSetParameters.Force | Should -BeTrue
+        }
+
+        It 'Should pass version-aware parameters to Delete' {
+            Mock Compare-ChocolateyPackage -MockWith {
+                [PSCustomObject]@{
+                    InstalledVersion = '1.0.0'
+                    ExpectedVersion  = '1.0.0'
+                    SideIndicator    = '='
+                }
+            }
+
+            Mock Uninstall-ChocolateyPackage -MockWith {}
+
+            $desiredState = [ChocolateyPackage]::new()
+            $desiredState.Name = 'git'
+            $desiredState.Version = '1.0.0'
+            $desiredState.Ensure = 'Absent'
+
+            [ChocolateyPackage]::Delete($desiredState)
+
+            Should -Invoke Compare-ChocolateyPackage -Times 1 -Exactly -ParameterFilter {
+                $Version -eq '1.0.0'
+            }
+
+            Should -Invoke Uninstall-ChocolateyPackage -Times 1 -Exactly -ParameterFilter {
+                $Version -eq '1.0.0'
+            }
+        }
+
+        It 'Should return an instance schema that includes UpdateOnly' {
+            $schema = [ChocolateyPackage]::InstanceJsonSchema() | ConvertFrom-Json -Depth 10
+
+            $schema.required | Should -Contain 'Name'
+            $schema.required | Should -Not -Contain 'Ensure'
+            $schema.properties.Ensure.enum | Should -Contain 'Present'
+            $schema.properties._name.readOnly | Should -BeTrue
+            $schema.properties.UpdateOnly.type | Should -Be 'boolean'
+            $schema.properties.Reasons.items.properties.Code.type | Should -Be 'string'
+        }
+    }
 }
