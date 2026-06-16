@@ -49,6 +49,20 @@ BeforeAll {
 - For commands that mutate system state and use the hidden `RunNonElevated` parameter defaulted from `Assert-ChocolateyIsElevated`, unit tests should normally pass `-RunNonElevated` unless the elevation check itself is the subject of the test.
 - Mock the command-discovery helper that the implementation actually uses. In this repository that is usually `Get-ChocolateyCommand`, not `Get-Command`.
 
+## Windows PowerShell 5.1 compatibility
+
+- Always wrap pipeline expressions in `@()` before calling `.Count` on them. On Windows PowerShell 5.1, a pipeline that produces exactly one object returns a scalar, and scalars without a `Count` property return `$null` instead of `1`. PowerShell 7 adds a synthetic `Count` member to all objects, masking the bug.
+
+  ```powershell
+  # Wrong — returns $null on WinPS 5.1 when exactly one item matches
+  ($collection | Where-Object { ... }).Count | Should -Be 1
+
+  # Correct — @() ensures a true array on both 5.1 and 7
+  @($collection | Where-Object { ... }).Count | Should -Be 1
+  ```
+
+- The same rule applies to any pipeline result where you call `.Count`, `.Length`, or index into the result (`[0]`): wrap in `@()` first.
+
 ## Validation commands
 
 ```powershell

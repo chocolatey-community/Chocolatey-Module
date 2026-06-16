@@ -13,6 +13,8 @@ applyTo: 'source/public/**/*.ps1'
   - at least one `.EXAMPLE`
   - `.PARAMETER` help for every parameter.
 - Use `[CmdletBinding()]`.
+- Put `[Parameter()]` on every parameter, even when no explicit metadata is needed.
+- Format each parameter with the attribute, type, and variable name on separate lines, with a blank line between comma-separated parameter declarations.
 - Include `[OutputType(...)]` when the command returns a defined type or stable output shape.
 - Use explicit parameter types where the command contract is stable.
 - Keep parameter names and defaults stable unless intentionally making a breaking change.

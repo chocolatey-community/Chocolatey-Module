@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added repository Copilot setup and instructions covering cloud-agent bootstrap,
   `build.ps1` validation patterns, Public/Private test coupling, and PowerShell
   coding conventions.
+- Clarified the PowerShell coding conventions to prefer `$null = <expression>`
+  over piping to `Out-Null`.
 - Clarified in Copilot instructions that the module is Windows-only while still
   requiring compatibility with Windows PowerShell 5.1 and PowerShell 7.
 - Split Copilot guidance into targeted instruction files and added a local
@@ -35,6 +37,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   revert to unlicensed Chocolatey behavior.
 - Added `Save-ChocolateyPackage` to wrap `choco download`, including licensed
   download, virus-scan, and internalization switches.
+- Added PowerShell argument completer registrations for local Chocolatey package, pin, source,
+  feature, and setting names across the module's wrapper commands.
+- Aligned the `ChocolateyPackage` DSC class more closely with the DSC v3 class
+  resource contract by adding tuple-based static `Test` and `Set` methods,
+  `InstanceJsonSchema()`, and improved export and delete handling.
+- Generalized DSC instance JSON schema generation in `ChocolateyBase` so class
+  resources can share the same schema builder.
 - Aligned wiki generation with the explicit Sampler docs workflow so content
   from `source\WikiSource` is prepared and published to the GitHub wiki.
 - Added a `Home.md` wiki landing page under `source\WikiSource`.

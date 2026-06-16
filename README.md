@@ -21,6 +21,29 @@ deployed to [PowerShell Gallery](https://www.powershellgallery.com/).
 Periodically a release version tag will be pushed which will deploy a
 full release to [PowerShell Gallery](https://www.powershellgallery.com/).
 
+## PowerShell argument completers
+
+Importing the module registers PowerShell argument completers for common
+Chocolatey wrapper commands.
+
+- Package name completion for `Get-ChocolateyPackage`,
+  `Uninstall-ChocolateyPackage`, `Update-ChocolateyPackage`, and
+  `Add-ChocolateyPin`
+- Pin name completion for `Get-ChocolateyPin`, `Remove-ChocolateyPin`, and
+  `Test-ChocolateyPin`
+- Source name completion for `Get-ChocolateySource`, `Test-ChocolateySource`,
+  `Enable-ChocolateySource`, `Disable-ChocolateySource`, and
+  `Unregister-ChocolateySource`
+- Feature name completion for `Get-ChocolateyFeature`,
+  `Test-ChocolateyFeature`, `Enable-ChocolateyFeature`, and
+  `Disable-ChocolateyFeature`
+- Setting name completion for `Get-ChocolateySetting`,
+  `Test-ChocolateySetting`, and `Set-ChocolateySetting`
+
+The completers are local-only and do not query remote package feeds. They use
+the current local Chocolatey package, pin, source, feature, and setting data to
+keep tab completion responsive.
+
 ## Contributing
 
 Please check out common DSC Community [contributing guidelines](CONTRIBUTING.md).
