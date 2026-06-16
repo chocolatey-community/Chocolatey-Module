@@ -47,10 +47,18 @@ Describe Register-ChocolateyArgumentCompleter {
         }
 
         It 'Should register the expected command and parameter combinations' {
-            $script:registrations.Count | Should -Be 7
+            $script:registrations.Count | Should -Be 8
 
             @($script:registrations | Where-Object -FilterScript {
                 $_.ParameterName -eq 'Name' -and $_.CommandName -contains 'Update-ChocolateyPackage'
+            }).Count | Should -Be 1
+
+            @($script:registrations | Where-Object -FilterScript {
+                $_.ParameterName -eq 'Name' -and $_.CommandName -contains 'Optimize-ChocolateyPackage'
+            }).Count | Should -Be 1
+
+            @($script:registrations | Where-Object -FilterScript {
+                $_.ParameterName -eq 'Name' -and $_.CommandName -contains 'Compare-ChocolateyPackage'
             }).Count | Should -Be 1
 
             @($script:registrations | Where-Object -FilterScript {
@@ -67,6 +75,14 @@ Describe Register-ChocolateyArgumentCompleter {
 
             @($script:registrations | Where-Object -FilterScript {
                 $_.ParameterName -eq 'Setting' -and $_.CommandName -contains 'Get-ChocolateySetting'
+            }).Count | Should -Be 1
+
+            @($script:registrations | Where-Object -FilterScript {
+                $_.ParameterName -eq 'Source' -and $_.CommandName -contains 'Install-ChocolateyPackage'
+            }).Count | Should -Be 1
+
+            @($script:registrations | Where-Object -FilterScript {
+                $_.ParameterName -eq 'Source' -and $_.CommandName -contains 'Publish-ChocolateyPackage'
             }).Count | Should -Be 1
         }
 
@@ -115,6 +131,30 @@ Describe Register-ChocolateyArgumentCompleter {
             $result | Should -Be 'feature-result'
             Should -Invoke New-ChocolateyCompletionResultForFeatureName -Times 1 -Exactly -ParameterFilter {
                 $WordToComplete -eq 'show'
+            }
+        }
+
+        It 'Should use the source completion helper for package operation commands' {
+            Mock New-ChocolateyCompletionResultForSourceName -MockWith { 'source-result' }
+
+            $registration = @($script:registrations | Where-Object -FilterScript {
+                $_.ParameterName -eq 'Source' -and $_.CommandName -contains 'Install-ChocolateyPackage'
+            }) | Select-Object -First 1
+
+            $result = InModuleScope -ScriptBlock {
+                param
+                (
+                    [Parameter()]
+                    [scriptblock]
+                    $ScriptBlock
+                )
+
+                & $ScriptBlock 'Install-ChocolateyPackage' 'Source' 'int' $null @{}
+            } -Parameters @{ ScriptBlock = $registration.ScriptBlock }
+
+            $result | Should -Be 'source-result'
+            Should -Invoke New-ChocolateyCompletionResultForSourceName -Times 1 -Exactly -ParameterFilter {
+                $WordToComplete -eq 'int'
             }
         }
     }

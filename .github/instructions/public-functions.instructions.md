@@ -40,3 +40,18 @@ applyTo: 'source/public/**/*.ps1'
 ```
 
 - User-visible behavior changes require an `Unreleased` changelog entry.
+
+## Argument completers
+
+When a new public function accepts parameters that map to known Chocolatey objects, register completers in `source/private/Register-ChocolateyArgumentCompleter.ps1`:
+
+| Parameter name | Typical usage | Completer helper |
+|---|---|---|
+| `-Name` (installed package id) | `Optimize-`, `Uninstall-`, `Update-`, `Compare-ChocolateyPackage`, `Add-ChocolateyPin` | `$packageNameCompleter` |
+| `-Name` (pin name) | `Get-`, `Remove-`, `Test-ChocolateyPin` | `$pinNameCompleter` |
+| `-Name` or `-Source` (source name) | `Get-`, `Enable-`, `Disable-`, `Unregister-ChocolateySource` | `$sourceNameCompleter` |
+| `-Source` (package operation) | `Install-`, `Update-`, `Uninstall-`, `Save-`, `Find-`, `Compare-`, `Publish-ChocolateyPackage` | `$sourceNameCompleter` |
+| `-Name` / feature name | `Get-`, `Enable-`, `Disable-`, `Test-ChocolateyFeature` | `$featureNameCompleter` |
+| `-Name` / setting name | `Set-`, `Test-ChocolateySetting` | `$settingNameCompleter` |
+
+After updating the registration, update the count assertion and add a targeted assertion for the new command/parameter pair in `tests/Unit/Private/Register-ChocolateyArgumentCompleter.tests.ps1`.

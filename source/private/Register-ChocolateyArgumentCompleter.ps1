@@ -152,11 +152,23 @@ function Register-ChocolateyArgumentCompleter
     }
 
     Register-ArgumentCompleter -CommandName @(
+        'Compare-ChocolateyPackage',
         'Get-ChocolateyPackage',
+        'Optimize-ChocolateyPackage',
         'Uninstall-ChocolateyPackage',
         'Update-ChocolateyPackage',
         'Add-ChocolateyPin'
     ) -ParameterName 'Name' -ScriptBlock $packageNameCompleter
+
+    Register-ArgumentCompleter -CommandName @(
+        'Compare-ChocolateyPackage',
+        'Find-ChocolateyPackage',
+        'Install-ChocolateyPackage',
+        'Publish-ChocolateyPackage',
+        'Save-ChocolateyPackage',
+        'Uninstall-ChocolateyPackage',
+        'Update-ChocolateyPackage'
+    ) -ParameterName 'Source' -ScriptBlock $sourceNameCompleter
 
     Register-ArgumentCompleter -CommandName @(
         'Get-ChocolateyPin',
