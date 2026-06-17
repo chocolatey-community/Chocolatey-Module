@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add `DscResource.Authoring` module configuration and build task
+- Added `DscResource.Authoring` module configuration and build task
+- Added `Publish-ChocolateyPackage` public function wrapping `choco push` to publish `.nupkg` files to a Chocolatey-compatible feed, with support for `Source`, `ApiKey`, and standard common options.
+- Added `Optimize-ChocolateyPackage` public function wrapping `choco optimize` (Licensed) to reduce disk space used by installed packages, with support for `Name` (per-package) and `ReduceNupkgOnly`.
+- Added `Sync-ChocolateyPackage` public function wrapping `choco sync` (C4B) to synchronize Chocolatey with software installed outside of Chocolatey, with support for `Id`, `PackageId`, and `OutputDirectory`.
+- Added `Convert-ChocolateyPackage` public function wrapping `choco convert` (C4B) to convert `.nupkg` files to other package formats (currently `intune`), with both per-path and `IncludeAll` modes.
 
 ### Changed
 
@@ -39,6 +43,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   revert to unlicensed Chocolatey behavior.
 - Added `Save-ChocolateyPackage` to wrap `choco download`, including licensed
   download, virus-scan, and internalization switches.
+- Added PowerShell argument completer registrations for local Chocolatey package, pin, source,
+  feature, and setting names across the module's wrapper commands.
 - Aligned wiki generation with the explicit Sampler docs workflow so content
   from `source\WikiSource` is prepared and published to the GitHub wiki.
 - Added a `Home.md` wiki landing page under `source\WikiSource`.

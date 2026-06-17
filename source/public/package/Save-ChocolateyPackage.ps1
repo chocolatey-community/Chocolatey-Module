@@ -9,6 +9,9 @@
     switches, and package internalization. Licensed-only parameters throw when
     no Chocolatey license file is installed.
 
+    Throws a terminating error when the choco output indicates that one or more
+    packages were not downloaded (output contains `not downloaded`).
+
 .PARAMETER Name
     Package name to save from the configured source or a specified source.
 
@@ -400,8 +403,17 @@ function Save-ChocolateyPackage
         {
             $chocoArguments.Add('-y')
             Write-Debug -Message ('{0} {1}' -f $chocoCmd, ($chocoArguments -join ' '))
-            &$chocoCmd @chocoArguments | ForEach-Object -Process {
-                Write-Verbose -Message ('{0}' -f $_)
+
+            $chocoOutput = &$chocoCmd @chocoArguments
+            foreach ($line in $chocoOutput)
+            {
+                Write-Verbose -Message ('{0}' -f $line)
+            }
+
+            $failedLines = @($chocoOutput | Where-Object { $_ -match 'not downloaded' })
+            if ($failedLines.Count -gt 0)
+            {
+                throw ('Chocolatey package download failed:{0}{1}' -f [System.Environment]::NewLine, ($failedLines -join [System.Environment]::NewLine))
             }
         }
     }

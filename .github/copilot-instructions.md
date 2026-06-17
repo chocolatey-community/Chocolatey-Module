@@ -1,5 +1,11 @@
 # Copilot instructions for Chocolatey
 
+## Git workflow
+
+- Never run `git commit`, `git push`, or `git tag`. Leave all commits to the user.
+- Stage changes with `git add` only when explicitly asked to prepare a commit.
+- After completing work, summarize what changed so the user can review with `git diff` before committing.
+
 ## Build entrypoint
 
 - Use `./build.ps1` for all dependency restore, build, test, and validation work.
