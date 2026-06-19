@@ -50,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added a `Home.md` wiki landing page under `source\WikiSource`.
 - Added a `LicensedChocolatey.md` wiki page covering license install, removal,
   and the licensed-extension compatibility warning.
+- Added missing Pester tests for public and private Chocolatey wrapper functions, expanded the README command coverage and argument completer documentation, and increased the CI code coverage target from 8% to 30%.
 
 ### Fixed
 
@@ -128,7 +129,7 @@ for DSCv3 that combines Name and Version to uniquely identify package instances.
 - Invoking choco commands now always add `--no-progress` & `--limit-output`.
 - Limiting Get-Command choco to the first result as per [#69](https://github.com/chocolatey-community/Chocolatey/issues/69) on all calls.
 - Changed `ChocolateySoftware` to be class-based DSC Resource.
-- Changed `ChocolateyPackage` to be class-based DSC Resource.
+- Changed `ChocolateyPackage` to be a class-based DSC Resource.
 - Changed `ChocolateySource` to be a class-based DSC Resource.
 - Changed `ChocolateyFeature` to be a class-based DSC Resource.
 

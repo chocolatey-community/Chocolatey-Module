@@ -40,6 +40,7 @@ applyTo: 'source/public/**/*.ps1'
 ```
 
 - User-visible behavior changes require an `Unreleased` changelog entry.
+- When adding a new public wrapper for a `choco` command, update the **Command coverage** table in `README.md`: move the row from `—` to the new function name, and remove the corresponding bullet from the "Not yet implemented" list.
 
 ## Argument completers
 
