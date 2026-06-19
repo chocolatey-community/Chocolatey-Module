@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `DscResource.Authoring` module configuration and build task
 - Added `Publish-ChocolateyPackage` public function wrapping `choco push` to publish `.nupkg` files to a Chocolatey-compatible feed, with support for `Source`, `ApiKey`, and standard common options.
 - Added `Optimize-ChocolateyPackage` public function wrapping `choco optimize` (Licensed) to reduce disk space used by installed packages, with support for `Name` (per-package) and `ReduceNupkgOnly`.
 - Added `Sync-ChocolateyPackage` public function wrapping `choco sync` (C4B) to synchronize Chocolatey with software installed outside of Chocolatey, with support for `Id`, `PackageId`, and `OutputDirectory`.

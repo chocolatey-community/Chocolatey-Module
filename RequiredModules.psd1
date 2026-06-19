@@ -32,6 +32,12 @@
     'DscResource.Common'        = 'latest'
     'DscResource.Test'          = 'latest'
     'DscResource.AnalyzerRules' = 'latest'
+    'DscResource.Authoring' = @{
+        Version    = 'latest'
+        Parameters = @{
+            AllowPrerelease = $true
+        }
+    }
     xDscResourceDesigner        = 'latest'
     'DscResource.DocGenerator'  = 'latest'
     platyPS                     = 'latest'
